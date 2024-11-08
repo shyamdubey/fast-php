@@ -5,13 +5,10 @@ class RouteTable{
     public function __construct(){
 
         //register route for get all quizzes
-        $this->registerRoute('employee/createAccount', 'EmployeeController', 'createAccount');
-        $this->registerRoute('employee/getById/{val}', 'EmployeeController', 'getById');
-        $this->registerRoute('employee', 'EmployeeController', '');
-        $this->registerRoute('quiz', 'QuizService', '');
-        $this->registerRoute('quiz/getAllByUserId/{val}', 'QuizService', 'getAllByUserId');
-        $this->registerRoute('quiz/deleteById/{val}', 'QuizService', 'deleteById');
-        $this->registerRoute('quiz/update', 'QuizService', 'update');
+        $this->registerRoute('quiz', 'QuizService', '', ['GET', 'POST']);
+        $this->registerRoute('quiz/getAllByUserId/{val}', 'QuizService', 'getAllByUserId', ['GET']);
+        $this->registerRoute('quiz/deleteById/{val}', 'QuizService', 'deleteById', ['DELETE']);
+        $this->registerRoute('quiz/update', 'QuizService', 'update', ['PUT', 'POST']);
     }
 
 
@@ -19,14 +16,15 @@ class RouteTable{
         return $this->routes;
     }
 
-    public function registerRoute($route, $controller, $method){
+    public function registerRoute($route, $controller, $function, $allowedRequestMethods){
         if(strlen($route) > 0 && strlen($controller) > 0){
-            if(strlen($method)>0){
-                $controller = $controller."::".$method;
+            if(strlen($function)>0){
+                $controller = $controller."::".$function;
             }
 
             $routeObj['route']=$route;
             $routeObj['controller']=$controller;
+            $routeObj['allowedMethods']=$allowedRequestMethods;
             array_push($this->routes, $routeObj);
         }
     }

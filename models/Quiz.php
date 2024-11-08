@@ -2,15 +2,17 @@
 
 
 class Quiz{
-    $quizId;
-    $quizName;
-    $quizDescription;
-    $quizVisibility;
-    $noOfQuestions;
-    $userId;
-    $quizDatetime;
-    $quizStatus;
-    $quizAttemptedCount;
-    $quizViews;
+    public $quizId;
+    public $quizName;
+    public $quizDescription;
+    public $quizVisibility;
+    public $noOfQuestions;
+    public $userId;
+    public $quizDatetime;
+    public $quizStatus;
+    public $quizAttemptedCount;
+    public $quizViews;
+    public $quizCategory;  // added for category
+
     
 }

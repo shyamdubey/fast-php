@@ -1,6 +1,10 @@
 <?php
 
 
+foreach(glob(__DIR__."/models/*.php") as $file){
+    require_once $file;
+}
+
 
 function getUUID(){
     return uniqid("quizbuddy");
@@ -11,6 +15,11 @@ function getLogFileNameForToday(){
     $dir = __DIR__."/logs";
     $fileName = $dir."/".$today."_log.log";
     return $fileName;
+}
+
+
+function getRequestMethod(){
+    return $_SERVER['REQUEST_METHOD'];
 }
 
 function assertRequestPost(){
@@ -74,7 +83,7 @@ function logMessage($message){
     else{
         $fp = createLogFile();
     }
-    fwrite($fp, $message."--------".$now."\n ---------------------------------------------------------");
+    fwrite($fp, "\n".$message."--------".$now."\n ---------------------------------------------------------");
 
 }
 
@@ -96,15 +105,18 @@ function convertJsonToModel($model, $jsonObject){
     $model = new $model();
     $classVarsList = get_class_vars(get_class($model));
     foreach($classVarsList as $key => $value){
+        print_r($jsonObject);
         try{
             if(property_exists($jsonObject, $key)){
-                $model->key = $jsonObject->key;
+                $model->key = $jsonObject[$key];
             }
         }
         catch(Exception $ex){
             echo sendResponse(false, 400, $ex);
         }
     }
+
+    return $model;
 
 }
 

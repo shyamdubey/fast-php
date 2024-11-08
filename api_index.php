@@ -5,8 +5,7 @@ require_once __DIR__."/utils/RouteTable.php";
 
 
 
-//include all controllers and models
-
+//include all servicem,
 foreach(glob("service/*.php") as $file){
     require_once $file;
 }
@@ -20,9 +19,11 @@ $routesControllerMap = $routeTable->getRoutes();
 
 $routes = [];
 $controllersArray =  [];
+$allowedMethodsArray = [];
 foreach($routesControllerMap as $map){
     array_push($routes, $map['route']);
     array_push($controllersArray, $map['controller']);
+    array_push($allowedMethodsArray, $map['allowedMethods']);
 }
 
 
@@ -32,6 +33,7 @@ $uri_arr = explode("/", $uri);
 $spliced_arr = array_slice($uri_arr, 3, count($uri_arr));
 
 switch (count($spliced_arr)){
+    
     case 1:
         if($spliced_arr[0] == null){
             defaultFunction();
@@ -64,16 +66,22 @@ switch (count($spliced_arr)){
 
 
 function case1(){
-    global $spliced_arr, $routes, $controllersArray;
+    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray;
     $route = $spliced_arr[0];
     $requestBody = getRequestBody();
     if(in_array($route, $routes)){
         $requiredService = $controllersArray[array_search($route, $routes)];
-        $service = new $requiredService;
+        $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
         $requestMethod = $_SERVER['REQUEST_METHOD'];
+        if(!in_array($requestMethod, $allowedMethods)){
+            echo sendResponse(false, 405, "Method Not Allowed");
+        }
+        $service = new $requiredService;
+        $modelName = explode("Service", $requiredService)[0];
         switch ($requestMethod){
             case 'POST':
-                echo "Save Request";
+                $model = convertJsonToModel($modelName, $requestBody);
+                print_r($model);
                 break;
             case 'GET':
                 echo sendResponse(true, 200, $service->getAll());
@@ -90,7 +98,7 @@ function case1(){
 }
 
 function case2(){
-    global $spliced_arr, $routes, $controllersArray;
+    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray;
     $firstRoute = $spliced_arr[0];
     $secondRoute = $spliced_arr[1];
     if(strlen($firstRoute) < 1 || strlen($secondRoute) < 1){
@@ -100,14 +108,18 @@ function case2(){
     $route = $firstRoute."/".$secondRoute;
     if(in_array($route, $routes)){
         $requiredService = $controllersArray[array_search($route, $routes)];
+        $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
+        $requestMethod = $_SERVER['REQUEST_METHOD'];
+        if(!in_array($requestMethod, $allowedMethods)){
+            echo sendResponse(false, 405, "Method Not Allowed");
+        }
         $service = explode("::", $requiredService)[0];
         $service = new $service;
         $requiredMethod = explode("::", $requiredService)[1];
         $requestBody = getRequestBody();
-        $requestMethod = $_SERVER['REQUEST_METHOD'];
         switch ($requestMethod){
             case 'POST':
-                echo "Save Request";
+                echo sendResponse(true, 200, $service->$requiredMethod($requestBody));
                 break;
             case 'GET':
                 echo sendResponse(true, 200, $service->$requiredMethod());
@@ -129,7 +141,7 @@ function case2(){
 
 
 function case3(){
-    global $spliced_arr, $routes, $controllersArray;
+    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray;
     $requestBody = getRequestBody();
     $firstRoute = $spliced_arr[0];
     $secondRoute = $spliced_arr[1];
@@ -141,12 +153,16 @@ function case3(){
     $route = $firstRoute."/".$secondRoute."/{val}";
     if(in_array($route, $routes)){
         $requiredService = $controllersArray[array_search($route, $routes)];
+        $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
+        $requestMethod = $_SERVER['REQUEST_METHOD'];
+        if(!in_array($requestMethod, $allowedMethods)){
+            echo sendResponse(false, 405, "Method Not Allowed");
+        }
         $service = explode("::", $requiredService)[0];
         $service = new $service;
         $requiredMethod = explode("::", $requiredService)[1];
         $thirdValue = $thirdRoute;
 
-        $requestMethod = $_SERVER['REQUEST_METHOD'];
         switch ($requestMethod){
             case 'GET':
                 echo sendResponse(true, 200, $service->$requiredMethod($thirdValue));
@@ -154,13 +170,13 @@ function case3(){
             case 'DELETE':
                 echo sendResponse(true, 200, $service->$requiredMethod($thirdValue));
             default:
-                echo sendResponse(false, 404, 'Invalid Request');
+                echo sendResponse(false, 404, '404 Not Found');
 
         }
 
     }
     else{
-        sendResponse(false, 404, "Not Found");
+        sendResponse(false, 404, "404 Not Found");
     }
 
 }
