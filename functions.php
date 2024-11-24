@@ -1,122 +1,216 @@
 <?php
 
 
-foreach(glob(__DIR__."/models/*.php") as $file){
+foreach (glob(__DIR__ . "/models/*.php") as $file) {
     require_once $file;
 }
 
 
-function getUUID(){
+function getUUID()
+{
     return uniqid("quizbuddy");
 }
 
-function getLogFileNameForToday(){
+function getLogFileNameForToday()
+{
     $today = date("d-M-Y", time());
-    $dir = __DIR__."/logs";
-    $fileName = $dir."/".$today."_log.log";
+    $dir = __DIR__ . "/logs";
+    $fileName = $dir . "/" . $today . "_log.log";
     return $fileName;
 }
 
 
-function getRequestMethod(){
+function getRequestMethod()
+{
     return $_SERVER['REQUEST_METHOD'];
 }
 
-function assertRequestPost(){
+function assertRequestPost()
+{
     $requestMethod = $_SERVER['REQUEST_METHOD'];
-    if($requestMethod != 'POST'){
+    if ($requestMethod != 'POST') {
         echo sendResponse(false, 405, "Only POST method allowed.");
     }
 }
 
-function assertRequestGet(){
+function assertRequestGet()
+{
     $requestMethod = $_SERVER['REQUEST_METHOD'];
-    if($requestMethod != 'GET'){
+    if ($requestMethod != 'GET') {
         echo sendResponse(false, 405, "Only GET method allowed.");
     }
 }
 
-function assertRequestDelete(){
+function assertRequestDelete()
+{
     $requestMethod = $_SERVER['REQUEST_METHOD'];
-    if($requestMethod != 'DELETE'){
+    if ($requestMethod != 'DELETE') {
         echo sendResponse(false, 405, "Only DELETE method allowed.");
     }
 }
 
 
-function getRequestBody(){
-    return file_get_contents("php://input");
+function makeCurlRequest($url, $requestType, $data)
+{
+    $curlHandle = curl_init($url);
+    curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $data);
+    if ($requestType == 'POST') {
+        curl_setopt($curlHandle, CURLOPT_POST, true);
+    }
+    if ($requestType == 'GET') {
+        curl_setopt($curlHandle, CURLOPT_HTTPGET, true);
+    }
+
+    curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, true);
+
+    $curlResponse = curl_exec($curlHandle);
+    curl_close($curlHandle);
+    return $curlResponse;
 }
 
-function assertRequestPut(){
+
+function verifyToken($token)
+{
+    if ($token != null && $token != "") {
+        return makeCurlRequest(AppConstants::MCQBUDDY_VERIFY_TOKEN_API, 'POST', json_encode(["token" => $token]));
+    } else {
+        return "token is null or empty";
+    }
+}
+
+function isTokenValid($token)
+{
+    if ($token != null || $token != "") {
+        $tokenJson = verifyToken($token);
+        $tokenJson = json_decode($tokenJson);
+        try {
+            $response = $tokenJson->statusCode;
+            if ($response == "200") {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception $e) {
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+
+function getUserFromToken($token)
+{
+    if ($token != null && isTokenValid($token)) {
+        $jsonData = makeCurlRequest(AppConstants::MCQBUDDY_GET_USER_BY_TOKEN, 'POST', json_encode(["token" => $token]));
+        return $jsonData;
+    }
+}
+
+function getUserIdFromToken($token)
+{
+    if ($token != null && $token != "") {
+        $jsonData = getUserFromToken($token);
+        $json = json_decode($jsonData);
+        if ($json->jwtTokenCreatedFor == 'Admin') {
+            return $json->super_users_id;
+        } else {
+            return $json->user_id;
+        }
+    } else {
+        return 1;
+    }
+}
+
+
+function getRequestBody()
+{
+    return json_decode(file_get_contents("php://input"));
+}
+
+function assertRequestPut()
+{
     $requestMethod = $_SERVER['REQUEST_METHOD'];
-    if($requestMethod != 'PUT'){
+    if ($requestMethod != 'PUT') {
         echo sendResponse(false, 405, "Only PUT method allowed.");
     }
 }
 
 
-function sendResponse($status, $statusCode, $data){
+function sendResponse($status, $statusCode, $data)
+{
     http_response_code($statusCode);
-    echo json_encode(['status'=>$status, "statusCode"=>$statusCode, 'data'=>$data]);
+    echo json_encode(['status' => $status, "statusCode" => $statusCode, 'data' => $data]);
     die();
     exit();
 }
 
-function deleteLogFile($fileName){
+function deleteLogFile($fileName) {}
 
-}
-
-function createLogFile(){
-   $fileName = getLogFileNameForToday();
+function createLogFile()
+{
+    $fileName = getLogFileNameForToday();
     $fp = fopen($fileName, "w");
     return $fp;
 }
 
 
-function logMessage($message){
+function logMessage($message)
+{
     $now = date("d-M-Y H:i:s", time());
     $fileName = getLogFileNameForToday();
-    if(file_exists($fileName)){
+    if (file_exists($fileName)) {
         $fp = fopen($fileName, "a");
-    }
-    else{
+    } else {
         $fp = createLogFile();
     }
-    fwrite($fp, "\n".$message."--------".$now."\n ---------------------------------------------------------");
-
+    fwrite($fp, "\n" . $message . "--------" . $now . "\n ---------------------------------------------------------");
 }
 
-function readLogFileContent($fileName){
-    $logFile = __DIR__."/logs/".$fileName;
+function readLogFileContent($fileName)
+{
+    $logFile = __DIR__ . "/logs/" . $fileName;
     $str = '';
-    if(file_exists($logFile)){
+    if (file_exists($logFile)) {
         $fp = fopen($logFile, "r");
-        $str.= '<pre>'.file_get_contents($logFile).'</pre>';
-    }
-    else{
-        $str.= "File does not exist.";
+        $str .= '<pre>' . file_get_contents($logFile) . '</pre>';
+    } else {
+        $str .= "File does not exist.";
     }
 
     return $str;
 }
 
-function convertJsonToModel($model, $jsonObject){
+
+function getTokenFromRequest()
+{
+    $headers = apache_request_headers();
+    if (isset($headers['Authorization'])) {
+        $bearerToken = $headers['Authorization'];
+        $bearerTokenArr = explode("Bearer ", $bearerToken); 
+        return $bearerTokenArr[1];
+    }
+    return null;
+}
+
+
+function getLoggedInUserInfo(){
+    $token = getTokenFromRequest();
+    if($token != null){
+       return getUserFromToken($token);
+    }
+    return null;
+}
+
+function verifyModel($model, $jsonObject)
+{
     $model = new $model();
     $classVarsList = get_class_vars(get_class($model));
-    foreach($classVarsList as $key => $value){
-        print_r($jsonObject);
-        try{
-            if(property_exists($jsonObject, $key)){
-                $model->key = $jsonObject[$key];
-            }
-        }
-        catch(Exception $ex){
-            echo sendResponse(false, 400, $ex);
+    foreach ($classVarsList as $key => $value) {
+        if (!property_exists($jsonObject, $key)) {
+            echo sendResponse(false, 400, $key . " is required property.");
         }
     }
 
     return $model;
-
 }
-

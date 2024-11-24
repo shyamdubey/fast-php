@@ -1,7 +1,15 @@
 <?php
 
+// Allow from any origin
+header("Access-Control-Allow-Origin: *");
 
-header("content-type:application/json");
+// Allow specific methods
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 
-header("access-control-allow-origin: *");
-header("access-control-allow-method: *");
+// Allow specific headers
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Mcqbuddy_apiKey");
+
+// Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    exit;
+}

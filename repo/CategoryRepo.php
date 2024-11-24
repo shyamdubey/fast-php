@@ -4,14 +4,14 @@ require_once __DIR__."/../utils/AppConstants.php";
 require_once __DIR__."/../assets/dbconn.php";
 require_once __DIR__."/../functions.php";
 
-class QuizRepo{
+class CategoryRepo{
     public $tableName;
     public $conn, $now;
 
 
     public function __construct(){
         global $conn, $now;
-        $this->tableName = AppConstants::QUIZ_TABLE;
+        $this->tableName = AppConstants::CATEGORY_TABLE;
         $this->conn = $conn;
         $this->now = $now;
         $this->createTable();
@@ -20,16 +20,12 @@ class QuizRepo{
 
     private function createTable(){
         $sql = 'CREATE TABLE IF NOT EXISTs '.$this->tableName.'  (
-        quizId varchar(255) not null,
-        quizName varchar(1000) not null,
-        quizDescription varchar(4000) ,
-        quizVisibility varchar(255) not null,
-        quizStatus int default 1,
+        categoryId varchar(255) not null,
+        categoryName varchar(1000) not null,
+        categoryStatus int default 1,
         userId int not null,
-        quizDatetime varchar(45) not null,
-        quizAttemptedCount int default 0,
-        quizViews int default 0,
-        primary key (quizId)
+        categoryDatetime varchar(45) not null,
+        primary key (categoryId)
 
         )';
         $res = mysqli_query($this->conn, $sql);
@@ -42,8 +38,8 @@ class QuizRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizId, quizName, quizDescription, quizVisibility, quizStatus, userId, quizDatetime, quizAttemptedCount, quizViews) 
-        values ('".getUUID()."', '$model->quizName', '$model->quizDescription', '$model->quizVisibility', 1, $model->userId, '$this->now', 0, 0)";
+        $sql = "INSERT INTO ".$this->tableName." (categoryId, categoryName, categoryStatus, userId, categoryDatetime) 
+        values ('".getUUID()."', '$model->categoryName', 1, $model->userId, '$this->now')";
         if(mysqli_query($this->conn, $sql)){
             return true;
         }
@@ -76,13 +72,13 @@ class QuizRepo{
     }
 
     function getById($id){
-        $sql = "SELECT * FROM ".$this->tableName." where quizId = '$id'";
+        $sql = "SELECT * FROM ".$this->tableName." where categoryId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
 
     function deleteById($id){
-        $sql = "DELETE FROM ".$this->tableName." where quizId = '$id'";
+        $sql = "DELETE FROM ".$this->tableName." where categoryId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         if($res){
             return true;

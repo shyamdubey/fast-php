@@ -1,0 +1,10 @@
+<?php
+
+
+class Category{
+    public $categoryId;
+    public $categoryName;
+    public $categoryStatus;
+    public $userId;
+    public $categoryDatetime;
+}

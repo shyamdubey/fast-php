@@ -15,6 +15,29 @@ foreach(glob("service/*.php") as $file){
 
 $routeTable = new RouteTable();
 
+$headers = apache_request_headers();
+
+//is request authorized.
+if(!isset($headers['Authorization'])){
+    echo sendResponse(false,  401, "Unauthorized access.");
+    die();
+}
+else{
+    $token = $headers['Authorization'];
+    $token = explode("Bearer ", $token)[1];
+    if($token == null){
+        echo sendResponse(false,  401, "Unauthorized access.");
+    }
+
+    if(!isTokenValid($token)){
+        echo sendResponse(false, 401, "Unauthorized access.");
+    }
+    else{
+        $userDetails = getUserFromToken($token);
+        $userDetails = json_decode($userDetails);
+    }
+}
+
 $routesControllerMap = $routeTable->getRoutes();
 
 $routes = [];
@@ -28,9 +51,9 @@ foreach($routesControllerMap as $map){
 
 
 $uri = $_SERVER['REQUEST_URI'];
-$uri_arr = explode("/", $uri);
+$uri_arr = explode("api/", $uri);
+$spliced_arr = explode("/", $uri_arr[1]);
 
-$spliced_arr = array_slice($uri_arr, 3, count($uri_arr));
 
 switch (count($spliced_arr)){
     
@@ -66,7 +89,7 @@ switch (count($spliced_arr)){
 
 
 function case1(){
-    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray;
+    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray, $userDetails;
     $route = $spliced_arr[0];
     $requestBody = getRequestBody();
     if(in_array($route, $routes)){
@@ -77,11 +100,11 @@ function case1(){
             echo sendResponse(false, 405, "Method Not Allowed");
         }
         $service = new $requiredService;
-        $modelName = explode("Service", $requiredService)[0];
         switch ($requestMethod){
             case 'POST':
-                $model = convertJsonToModel($modelName, $requestBody);
-                print_r($model);
+                $requestBody->userId = $userDetails->user_id;
+                $service->save($requestBody);
+                echo sendResponse(true, 201, "Saved Successfully.");
                 break;
             case 'GET':
                 echo sendResponse(true, 200, $service->getAll());
@@ -134,7 +157,7 @@ function case2(){
 
     }
     else{
-        sendResponse(false, 404, "Not Found");
+        echo sendResponse(false, 404, "Not Found");
     }
 
 }
@@ -176,13 +199,14 @@ function case3(){
 
     }
     else{
-        sendResponse(false, 404, "404 Not Found");
+        echo sendResponse(false, 404, "404 Not Found");
     }
 
 }
 
 function defaultFunction(){
-    echo "Not a valid api endpoint";
+    echo sendResponse(true, 200, "UP");
+
 
 }
 

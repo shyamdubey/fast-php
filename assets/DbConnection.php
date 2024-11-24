@@ -12,8 +12,8 @@ class DbConnection{
         $this->conn = null;
         $this->dbName = "quizbuddy";
         $this->serverName = "localhost";
-        $this->username = "root";
-        $this->password = "Dauji@Dubey1996";
+        $this->username = "shyam";
+        $this->password = "Pass@123";
     }
 
     
