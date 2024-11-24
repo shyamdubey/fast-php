@@ -1,0 +1,117 @@
+<?php
+
+require_once __DIR__."/../utils/AppConstants.php";
+require_once __DIR__."/../assets/dbconn.php";
+require_once __DIR__."/../functions.php";
+
+class QuizAttemptRepo{
+    public $tableName;
+    public $conn, $now;
+
+
+    public function __construct(){
+        global $conn, $now;
+        $this->tableName = AppConstants::QUIZ_ATTEMPT_TABLE;
+        $this->conn = $conn;
+        $this->now = $now;
+        $this->createTable();
+
+    }
+
+    private function createTable(){
+        $sql = 'CREATE TABLE IF NOT EXISTs '.$this->tableName.'  (
+        quizAttemptId varchar(255) not null,
+        quizId varchar(255) not null,
+        marks int not null,
+        attemptedQuestions int not null,
+        startTime varchar(50),
+        endTime varchar(50),
+        userId int not null,
+        quizAttemptDatetime varchar(45) not null,
+        primary key (quizAttemptId),
+        constraint FK_QAttempt_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId)
+        )';
+        $res = mysqli_query($this->conn, $sql);
+        if($res){
+            return true;
+        }
+        return false;
+
+    }
+
+
+    function save($model){
+        $sql = "INSERT INTO ".$this->tableName." (quizAttemptId, quizId, marks, startTime, endTime,  attemptedQuestions, userId, quizAttemptDatetime) 
+        values ('".getUUID()."', '$model->quizId', $model->marks,  '$model->startTime', '$model->endTime', $model->attemptedQuestions, $model->userId, '$this->now')";
+        if(mysqli_query($this->conn, $sql)){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    function update($model){
+        $sql = "UPDATE ".$this->tableName." set marks = $model->marks , attemptedQuestions = $model->attemptedQuestions where quizAttemptId = '$model->quizAttemptId'";
+        $res = mysqli_query($this->conn, $sql);
+        if($res){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+
+    function getAll(){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId" ;
+        $data = [];
+        $res = mysqli_query($this->conn, $sql);
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
+    function getAllByQuizId($quizId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId'" ;
+        $data = [];
+        $res = mysqli_query($this->conn, $sql);
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
+    function getAllByUserId($userId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.userId = '$userId'" ;
+        $data = [];
+        $res = mysqli_query($this->conn, $sql);
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
+    function getById($id){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizAttemptId = '$id'"  ;
+        $res = mysqli_query($this->conn, $sql);
+        return mysqli_fetch_assoc($res);
+    }
+
+    function deleteById($id){
+        $sql = "DELETE FROM ".$this->tableName." where quizAttemptId = '$id'";
+        $res = mysqli_query($this->conn, $sql);
+        if($res){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+}
