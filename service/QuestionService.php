@@ -18,7 +18,14 @@ class QuestionService{
 
     public function save($requestBody){
         $model = new Question();
-        if(!isset($requestBody->question) || !isset($requestBody->option1) || !isset($requestBody->option2) || !isset($requestBody->option3) || !isset($requestBody->option4) || !isset($requestBody->correctAns)){
+        if(!isset($requestBody->question) 
+        || !isset($requestBody->option1) 
+    || !isset($requestBody->option2) 
+    || !isset($requestBody->option3) 
+    || !isset($requestBody->option4) 
+    || !isset($requestBody->correctAns)
+    || !isset($requestBody->categoryId)
+    ){
             echo sendResponse(false, 400, "Missing required parameters.");
         }
 
@@ -28,8 +35,16 @@ class QuestionService{
         $model->option3 = $requestBody->option3;
         $model->option4 = $requestBody->option4;
         $model->correctAns = $requestBody->correctAns;
+        $model->marks = $requestBody->marks;
+        $model->categoryId = $requestBody->categoryId;
         $model->userId = $requestBody->userId;
-        $model->questionVisibility = $requestBody->questionVisibility;
+
+        //check whether have images
+        if(isset($requestBody->haveImages)){
+            $model->haveImages = $requestBody->haveImages;
+        }
+
+        
         $this->questionRepo->save($model);
         
 

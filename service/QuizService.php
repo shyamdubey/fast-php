@@ -1,15 +1,18 @@
 <?php
 
 require_once __DIR__."/../repo/QuizRepo.php";
+require_once __DIR__."/../service/SpaceQuizMappingService.php";
 require_once __DIR__."/../models/Quiz.php";
+require_once __DIR__."/../models/SpaceQuizMapping.php";
 require_once __DIR__."/../functions.php";
 
 class QuizService{
 
-    public $quizRepo;
+    public $quizRepo, $spaceQuizMappingService;
 
     public function __construct(){
         $this->quizRepo = new QuizRepo();
+        $this->spaceQuizMappingService = new SpaceQuizMappingService;
     }
 
     public function getAll(){
@@ -18,18 +21,40 @@ class QuizService{
 
     public function save($requestBody){
         $model = new Quiz();
-        if(!isset($requestBody->quizName) || !isset($requestBody->quizDescription) || !isset($requestBody->quizVisibility)|| !isset($requestBody->noOfQuestions) || !isset($requestBody->quizCategory)|| !isset($requestBody->userId)){
+        if(!isset($requestBody->quizName) || !isset($requestBody->quizDescription) || !isset($requestBody->quizVisibility) || !isset($requestBody->userId)){
             echo sendResponse(false, 400, "Missing required parameters.");
         }
 
         $model->quizName = $requestBody->quizName;
         $model->quizDescription = $requestBody->quizDescription;
         $model->quizVisibility = $requestBody->quizVisibility;
-        $model->noOfQuestions = $requestBody->noOfQuestions;
         $model->userId = $requestBody->userId;
-        $model->quizCategory = $requestBody->quizCategory;
 
-        return $this->quizRepo->save($model);
+
+        //if we get space in request body we will do space quiz mapping
+        if(isset($requestBody->spaces)){
+            //get the latest quiz created by this user
+            $loggedInUser = getLoggedInUserInfo();
+            $loggedInUserData = json_decode($loggedInUser);
+            $quiz = $this->quizRepo->getTopByUserId($loggedInUserData->userId);
+
+            $spaces = $requestBody->spaces;
+            if(count($spaces)>0){
+                foreach($spaces as $space){
+                    $spaceQuizMappingModel = new SpaceQuizMapping();
+                    $spaceQuizMappingModel->quizId = $quiz['quizId'];
+                    $spaceQuizMappingModel->spaceId = $space;
+                    $this->spaceQuizMappingService->save($spaceQuizMappingModel);
+                }
+            }
+        }
+
+        if($this->quizRepo->save($model)){
+            return true;
+        }
+        else{
+            echo sendResponse(false, 500, "Internal Server Error. Something went wrong.");
+        }
 
     }
 
@@ -38,6 +63,17 @@ class QuizService{
         return $this->quizRepo->getAllByUserId($userId);
     }
 
+    public function getPublicQuiz(){
+        return $this->quizRepo->getAllByVisibility(1);
+    }
+
+    public function getBySpaceNotMappedData($spaceId){
+        return $this->quizRepo->getAllQuizzesWhichAreNotMappedToSpaceId($spaceId);
+    }
+
+    public function getPrivateQuiz(){
+        return $this->quizRepo->getAllByVisibility(0);
+    }
 
     public function update($requestBody){
         $this->save($requestBody);

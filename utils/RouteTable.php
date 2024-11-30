@@ -2,14 +2,61 @@
 
 class RouteTable{
     private $routes = [];
+    private $exemptedRoutes = [];
     public function __construct(){
 
-        //register route for get all quizzes
+        // //exempt routes for token validation
+        $this->registerRoutesForExemptions("user/", ['POST']);
+
+
+
+
+        //common routes
+        $this->registerRoute('common/endpoints', 'CommonService', 'getApiEndpoints', ['GET']);
+
+
+        //user routes
+        $this->registerRoute('user', 'UserService', '', ['GET', 'POST']);
+        $this->registerRoute('user/me', 'UserService', 'myData', ['GET']);
+        $this->registerRoute('user/page/{val}', 'UserService', 'getByPagination', ['GET']);
+        $this->registerRoute('user/getById/{val}', 'UserService', 'getById', ['GET']);
+        $this->registerRoute('user/filter/{val}', 'UserService', 'getByUsernameOrEmailOrNameLike', ['GET']);
+
+
+
+         //register route for space
+         $this->registerRoute('space', 'SpaceService', '', ['GET', 'POST']);
+         $this->registerRoute('space/getAllByUserId/{val}', 'SpaceService', 'getAllByUserId', ['GET']);
+         $this->registerRoute('space/public', 'SpaceService', 'getPublicSpaces', ['GET']);
+         $this->registerRoute('space/deleteById/{val}', 'SpaceService', 'deleteById', ['DELETE']);
+         $this->registerRoute('space/getById/{val}', 'SpaceService', 'getById', ['GET']);
+         $this->registerRoute('space/update', 'SpaceService', 'update', ['PUT', 'POST']);
+         $this->registerRoute('space/mySpaces', 'SpaceService', 'mySpaces', ['GET']);
+         $this->registerRoute('space/getByCode/{val}', 'SpaceService', 'getBySpaceJoinCode', ['GET']);
+         $this->registerRoute('space/getByUrl/{val}', 'SpaceService', 'getBySpaceUrl', ['GET']);
+         $this->registerRoute('space/updateColors', 'SpaceService', 'updateColors', ['POST']);
+ 
+
+          //register route for space students mapping
+          $this->registerRoute('spaceStudentMapping', 'SpaceUserMappingService', '', ['GET', 'POST']);
+          $this->registerRoute('spaceStudentMapping/mapByEmail', 'SpaceUserMappingService', 'mapByEmail', ['POST']);
+          $this->registerRoute('spaceStudentMapping/getAllByUserId/{val}', 'SpaceUserMappingService', 'getAllByUserId', ['GET']);
+          $this->registerRoute('spaceStudentMapping/getAllByStudentId/{val}', 'SpaceUserMappingService', 'getAllByStudentId', ['GET']);
+          $this->registerRoute('spaceStudentMapping/getBySpaceId/{val}', 'SpaceUserMappingService', 'getAllBySpaceId', ['GET']);
+          $this->registerRoute('spaceStudentMapping/deleteById/{val}', 'SpaceUserMappingService', 'deleteById', ['DELETE']);
+          $this->registerRoute('spaceStudentMapping/getById/{val}', 'SpaceUserMappingService', 'getById', ['GET']);
+          $this->registerRoute('spaceStudentMapping/update', 'SpaceUserMappingService', 'update', ['PUT', 'POST']);
+  
+
+        //register route for quizzes
         $this->registerRoute('quiz', 'QuizService', '', ['GET', 'POST']);
+        $this->registerRoute('quiz/public', 'QuizService', 'getPublicQuiz', ['GET', 'POST']);
+        $this->registerRoute('quiz/private', 'QuizService', 'getPrivateQuiz', ['GET', 'POST']);
         $this->registerRoute('quiz/getAllByUserId/{val}', 'QuizService', 'getAllByUserId', ['GET']);
         $this->registerRoute('quiz/deleteById/{val}', 'QuizService', 'deleteById', ['DELETE']);
         $this->registerRoute('quiz/getById/{val}', 'QuizService', 'getById', ['GET']);
         $this->registerRoute('quiz/update', 'QuizService', 'update', ['PUT', 'POST']);
+        $this->registerRoute('quiz/notMappedWithSpace/{val}', 'QuizService', 'getBySpaceNotMappedData', ['GET']);
 
 
 
@@ -58,6 +105,17 @@ class RouteTable{
         $this->registerRoute('quizAttemptDetailedInfo/update', 'QuizAttemptDetailedInfoService', 'update', ['PUT', 'POST']);
 
 
+        //for space quiz mapping
+        $this->registerRoute('spaceQuizMapping', 'SpaceQuizMappingService', '', ['GET', 'POST']);
+        $this->registerRoute('spaceQuizMapping/deleteById/{val}', 'SpaceQuizMappingService', 'deleteById', ['DELETE']);
+        $this->registerRoute('spaceQuizMapping/getById/{val}', 'SpaceQuizMappingService', 'getById', ['GET']);
+        $this->registerRoute('spaceQuizMapping/getByQuizId/{val}', 'SpaceQuizMappingService', 'getByQuizId', ['GET']);
+        $this->registerRoute('spaceQuizMapping/getBySpaceId/{val}', 'SpaceQuizMappingService', 'getAllBySpaceId', ['GET']);
+        $this->registerRoute('spaceQuizMapping/myData', 'SpaceQuizMappingService', 'getByToken', ['GET']);
+        $this->registerRoute('spaceQuizMapping/update', 'SpaceQuizMappingService', 'update', ['PUT', 'POST']);
+        $this->registerRoute('spaceQuizMapping/unMap/{val}', 'SpaceQuizMappingService', 'unMap', ['DELETE']);
+
+
     }
 
 
@@ -76,6 +134,17 @@ class RouteTable{
             $routeObj['allowedMethods']=$allowedRequestMethods;
             array_push($this->routes, $routeObj);
         }
+    }
+
+
+    public function registerRoutesForExemptions($route, $methods){
+        $exemptedRouteObj['route'] = $route;
+        $exemptedRouteObj['allowedMethods'] = $methods;
+        array_push($this->exemptedRoutes, $exemptedRouteObj);
+    }
+
+    public function getExemptedRoutes(){
+        return $this->exemptedRoutes;
     }
    
 

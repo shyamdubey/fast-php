@@ -44,12 +44,18 @@ class QuizAttemptDetailedInfoRepo{
     function save($model){
         $sql = "INSERT INTO ".$this->tableName." (quizAttemptDetailedInfoId, quizId, quizAttemptId, questionId, isCorrect, userId, quizAtmptDetInfoDatetime, userSelectedOption) 
         values ('".getUUID()."', '$model->quizId','$model->quizAttemptId', '$model->questionId', $model->isCorrect, $model->userId, '$this->now', '$model->userSelectedOption')";
-        if(mysqli_query($this->conn, $sql)){
-            return true;
-        }
-        else {
-            return false;
-        }
+        try{
+            $res = mysqli_query($this->conn, $sql);
+         }
+         catch(Exception $e){
+             echo sendResponse(false, 500, $e->getMessage());
+         }
+         if($res){
+             return true;
+         }
+         else {
+             return false;
+         }
     }
 
 

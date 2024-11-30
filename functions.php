@@ -82,20 +82,24 @@ function isTokenValid($token)
 {
     if ($token != null || $token != "") {
         $tokenJson = verifyToken($token);
-        $tokenJson = json_decode($tokenJson);
-        try {
-            $response = $tokenJson->statusCode;
-            if ($response == "200") {
-                return true;
-            } else {
+        if($tokenJson != null){
+            $tokenJson = json_decode($tokenJson);
+            try {
+                $response = $tokenJson->statusCode;
+                if ($response == "200") {
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception $e) {
                 return false;
             }
-        } catch (Exception $e) {
-            return false;
         }
-    } else {
-        return false;
-    }
+        
+        
+    } 
+    return false;
+    
 }
 
 
@@ -213,4 +217,108 @@ function verifyModel($model, $jsonObject)
     }
 
     return $model;
+}
+
+
+
+function generateSpaceJoinCode(){
+    return strtoupper(uniqid());
+}
+
+
+function getUserById($userId){
+    $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_GET_USER_BY_ID.$userId, 'GET', null);
+    if($jsonResponse != null){
+        $jsonData = json_decode($jsonResponse);
+        if($jsonData->statusCode == 200){
+            return $jsonData->data;
+        }
+    }
+    return null;
+}
+
+
+function createUserAccount($requestBody){
+    $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_CREATE_ACCOUNT, 'POST', json_encode($requestBody));
+    if($jsonResponse != null){
+        $jsonData = json_decode($jsonResponse);
+        if($jsonData->statusCode == 201){
+            return $jsonData->data;
+        }
+        else{
+            echo sendResponse($jsonData->status, $jsonData->statusCode, $jsonData->data);
+            die();
+        }
+    }
+    else{
+        echo sendResponse(false, 500, 'Internal Server Error. Something went wrong.');
+    }
+}
+
+function getUsersWhereNameEmailUsernameLike($value){
+    $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_GET_USERS_WHERE_NAME_LIKE.$value, 'GET', null);
+    if($jsonResponse != null){
+        $jsonData = json_decode($jsonResponse);
+        return $jsonData->data;
+    }
+    return null;
+}
+
+function getUsersByEmail($value){
+    $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_GET_USERS_BY_EMAIL.$value, 'GET', null);
+    if($jsonResponse != null){
+        $jsonData = json_decode($jsonResponse);
+        return $jsonData->data;
+    }
+    return null;
+}
+
+function getAllUsers(){
+    $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_GET_ALL_USERS, 'GET', null);
+    if($jsonResponse != null){
+        $jsonData = json_decode($jsonResponse);
+        if($jsonData->statusCode == 200){
+            return $jsonData->data;
+        }
+    }
+    return null;
+}
+
+
+function getAllUsersByPagination($page){
+    $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_GET_ALL_USERS_BY_PAGINATION.$page, 'GET', null);
+    if($jsonResponse != null){
+        $jsonData = json_decode($jsonResponse);
+        if($jsonData->statusCode == 200){
+            return $jsonData->data;
+        }
+    }
+    return null;
+}
+
+
+function makeRequestBodySafe($requestBody){
+    if($requestBody != null){
+        $array = get_mangled_object_vars($requestBody);
+        $arrayKeys = array_keys($array);
+        for($i = 0; $i < count($arrayKeys); $i++){
+            $key = $arrayKeys[$i];
+            if($array[$key] != null && strlen($array[$key])>0){
+                $requestBody->$key = htmlentities($array[$key]);
+            }
+        }
+    }
+    
+    return $requestBody;
+}
+
+
+function uploadImage($file, $path){
+    $target_dir = $path;
+    print_r($file);
+    $imgUrl = basename($file["name"]);
+    $target_file = $target_dir.$imgUrl;
+    $target_file = str_replace(" ", "_", $target_file);
+    $tmpName = $file['tmp_name'];
+    move_uploaded_file($tmpName, $target_file);
 }

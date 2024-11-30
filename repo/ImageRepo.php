@@ -4,14 +4,14 @@ require_once __DIR__."/../utils/AppConstants.php";
 require_once __DIR__."/../assets/dbconn.php";
 require_once __DIR__."/../functions.php";
 
-class CategoryRepo{
+class ImageRepo{
     public $tableName;
     public $conn, $now;
 
 
     public function __construct(){
         global $conn, $now;
-        $this->tableName = AppConstants::CATEGORY_TABLE;
+        $this->tableName = AppConstants::IMAGES_TABLE;
         $this->conn = $conn;
         $this->now = $now;
         $this->createTable();
@@ -20,13 +20,12 @@ class CategoryRepo{
 
     private function createTable(){
         $sql = 'CREATE TABLE IF NOT EXISTs '.$this->tableName.'  (
-        categoryId varchar(255) not null,
-        categoryName varchar(1000) not null,
-        categoryStatus int default 1,
+        imageId varchar(255) not null,
+        imageName varchar(255) not null,
+        imageUrl text not null,
         userId int not null,
-        categoryDatetime varchar(45) not null,
-        primary key (categoryId)
-
+        imageDatetime varchar(45) not null,
+        primary key (imageId)
         )';
         $res = mysqli_query($this->conn, $sql);
         if($res){
@@ -38,8 +37,8 @@ class CategoryRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (categoryId, categoryName, categoryStatus, userId, categoryDatetime) 
-        values ('".getUUID()."', '$model->categoryName', 1, $model->userId, '$this->now')";
+        $sql = "INSERT INTO ".$this->tableName." (imageId, imageName, imageUrl, userId, imageDatetime) 
+        values ('".getUUID()."', '$model->imageName', '$model->imageUrl',  $model->userId, '$this->now')";
         try{
             $res = mysqli_query($this->conn, $sql);
          }
@@ -77,14 +76,25 @@ class CategoryRepo{
         return $data;
     }
 
+    function getAllByQuestionId($questionId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::IMAGES_TABLE." C on C.imageId = A.imageId A.questionId = '$questionId'";
+        $data = [];
+        $res = mysqli_query($this->conn, $sql);
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
     function getById($id){
-        $sql = "SELECT * FROM ".$this->tableName." where categoryId = '$id'";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::IMAGES_TABLE." C on C.imageId = A.imageId where A.imageId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
 
     function deleteById($id){
-        $sql = "DELETE FROM ".$this->tableName." where categoryId = '$id'";
+        $sql = "DELETE FROM ".$this->tableName." where imageId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         if($res){
             return true;

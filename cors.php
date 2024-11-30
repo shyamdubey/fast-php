@@ -1,5 +1,5 @@
 <?php
-
+header('content-type:application/json');
 // Allow from any origin
 header("Access-Control-Allow-Origin: *");
 

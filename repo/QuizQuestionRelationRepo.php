@@ -31,10 +31,18 @@ class QuizQuestionRelationRepo{
         constraint FK_QQRel_Question FOREIGN KEY (questionId) REFERENCES '.AppConstants::QUESTIONS_TABLE.' (questionId)
         )';
         $res = mysqli_query($this->conn, $sql);
-        if($res){
-            return true;
-        }
-        return false;
+        try{
+            $res = mysqli_query($this->conn, $sql);
+         }
+         catch(Exception $e){
+             echo sendResponse(false, 500, $e->getMessage());
+         }
+         if($res){
+             return true;
+         }
+         else {
+             return false;
+         }
 
     }
 
