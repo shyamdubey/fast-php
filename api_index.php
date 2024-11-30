@@ -16,6 +16,33 @@ foreach(glob("service/*.php") as $file){
 $routeTable = new RouteTable();
 
 $headers = apache_request_headers();
+$exemptedRoutesMap = $routeTable->getExemptedRoutes();
+$routesControllerMap = $routeTable->getRoutes();
+
+
+$routes = [];
+$exemptedRoutes = [];
+$controllersArray =  [];
+$allowedMethodsArray = [];
+foreach($routesControllerMap as $map){
+    array_push($routes, $map['route']);
+    array_push($controllersArray, $map['controller']);
+    array_push($allowedMethodsArray, $map['allowedMethods']);
+}
+
+foreach($exemptedRoutesMap as $map){
+    array_push($exemptedRoutes, $map['route']);
+}
+
+$requestMethod = $_SERVER['REQUEST_METHOD'];
+$uri = $_SERVER['REQUEST_URI'];
+$uri_arr = explode("api/", $uri);
+$spliced_arr = explode("/", $uri_arr[1]);
+
+
+
+//authorize the request for token only if it is not exempted
+if(!in_array($spliced_arr, $exemptedRoutes) && !in_array($requestMethod, $exemptedRoutesMap[array_search($spliced_arr, $exemptedRoutes)]['allowedMethods'])){
 
 //is request authorized.
 if(!isset($headers['Authorization'])){
@@ -38,21 +65,12 @@ else{
     }
 }
 
-$routesControllerMap = $routeTable->getRoutes();
-
-$routes = [];
-$controllersArray =  [];
-$allowedMethodsArray = [];
-foreach($routesControllerMap as $map){
-    array_push($routes, $map['route']);
-    array_push($controllersArray, $map['controller']);
-    array_push($allowedMethodsArray, $map['allowedMethods']);
 }
 
 
-$uri = $_SERVER['REQUEST_URI'];
-$uri_arr = explode("api/", $uri);
-$spliced_arr = explode("/", $uri_arr[1]);
+
+
+
 
 
 switch (count($spliced_arr)){
@@ -89,22 +107,24 @@ switch (count($spliced_arr)){
 
 
 function case1(){
-    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray, $userDetails;
+    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray, $userDetails, $requestMethod;
     $route = $spliced_arr[0];
     $requestBody = getRequestBody();
+    $requestBody = makeRequestBodySafe($requestBody);
     if(in_array($route, $routes)){
         $requiredService = $controllersArray[array_search($route, $routes)];
         $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
-        $requestMethod = $_SERVER['REQUEST_METHOD'];
         if(!in_array($requestMethod, $allowedMethods)){
             echo sendResponse(false, 405, "Method Not Allowed");
         }
         $service = new $requiredService;
         switch ($requestMethod){
             case 'POST':
-                $requestBody->userId = $userDetails->user_id;
+                if($userDetails != null){
+                    $requestBody->userId = $userDetails->userId;
+                }
                 $service->save($requestBody);
-                echo sendResponse(true, 201, "Saved Successfully.");
+                echo sendResponse(true, 201, 'Saved Successfully.');
                 break;
             case 'GET':
                 echo sendResponse(true, 200, $service->getAll());
@@ -121,7 +141,7 @@ function case1(){
 }
 
 function case2(){
-    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray;
+    global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray, $userDetails;
     $firstRoute = $spliced_arr[0];
     $secondRoute = $spliced_arr[1];
     if(strlen($firstRoute) < 1 || strlen($secondRoute) < 1){
@@ -142,6 +162,9 @@ function case2(){
         $requestBody = getRequestBody();
         switch ($requestMethod){
             case 'POST':
+                if($userDetails != null){
+                    $requestBody->userId = $userDetails->userId;
+                }
                 echo sendResponse(true, 200, $service->$requiredMethod($requestBody));
                 break;
             case 'GET':
@@ -192,6 +215,7 @@ function case3(){
                 break;
             case 'DELETE':
                 echo sendResponse(true, 200, $service->$requiredMethod($thirdValue));
+                break;
             default:
                 echo sendResponse(false, 404, '404 Not Found');
 

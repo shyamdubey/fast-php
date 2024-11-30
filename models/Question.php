@@ -9,9 +9,10 @@ class Question{
     public $option3;
     public $option4;
     public $correctAns;
+    public $categoryId;
     public $userId;
     public $questionDatetime;
-    public $questionVisibility;
     public $questionStatus;
     public $marks;
+    public $haveImages;
 }

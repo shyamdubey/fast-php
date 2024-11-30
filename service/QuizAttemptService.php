@@ -83,7 +83,7 @@ class QuizAttemptService{
         }
 
         $loggedInUser = json_decode($loggedInUser);
-        return $this->getByUserId($loggedInUser->user_id);
+        return $this->getByUserId($loggedInUser->userId);
 
     }
 
@@ -118,7 +118,7 @@ class QuizAttemptService{
             $questionAttemptDetailedInfoModel->quizAttemptId = $quizAttemptId;
             if($loggedInUser != null){
                 $loggedInUserData = json_decode($loggedInUser);
-                $questionAttemptDetailedInfoModel->userId = $loggedInUserData->user_id;
+                $questionAttemptDetailedInfoModel->userId = $loggedInUserData->userId;
             }
             else{
                 echo sendResponse(false, 400, "Internal Server Error. Could not load user data.");
@@ -161,7 +161,7 @@ class QuizAttemptService{
         $userData = getLoggedInUserInfo();
         if($userData != null){
             $userData =  json_decode($userData);
-            $quizAttempt->userId = $userData->user_id;
+            $quizAttempt->userId = $userData->userId;
         }
         else{
             echo sendResponse(false, 500, "Internal Server Error. Could not load user data.");

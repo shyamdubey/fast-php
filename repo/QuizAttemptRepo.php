@@ -32,10 +32,18 @@ class QuizAttemptRepo{
         constraint FK_QAttempt_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId)
         )';
         $res = mysqli_query($this->conn, $sql);
-        if($res){
-            return true;
-        }
-        return false;
+        try{
+            $res = mysqli_query($this->conn, $sql);
+         }
+         catch(Exception $e){
+             echo sendResponse(false, 500, $e->getMessage());
+         }
+         if($res){
+             return true;
+         }
+         else {
+             return false;
+         }
 
     }
 

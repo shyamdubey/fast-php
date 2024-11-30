@@ -12,7 +12,7 @@ class Quiz{
     public $quizStatus;
     public $quizAttemptedCount;
     public $quizViews;
-    public $quizCategory;  // added for category
+    public $spaceId;
 
     
 }
