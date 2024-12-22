@@ -29,7 +29,18 @@ class FileUploadService{
         $model->isPublic = $requestBody->isPublic;
         $model->fileUrl = $requestBody->fileUrl;
         $model->userId = $requestBody->userId;
-        $this->fileUploadRepo->save($model);
+        try{
+            if($this->fileUploadRepo->save($model)){
+                echo sendResponse(true, 201, "File upload successfully.");
+            }
+            else{
+            echo sendResponse(false, 500, "Something went wrong. Please try again or inform to Administrator.");
+
+            }
+        }
+        catch(Exception $ex){
+            echo sendResponse(false, 500, $ex->getMessage());
+        }
         
 
     }
@@ -60,7 +71,7 @@ class FileUploadService{
     public function myFiles(){
         $loggedInUser = getLoggedInUserInfo();
         if($loggedInUser != null){
-            return $this->getAllByUserIdAndPurpose($loggedInUser->userId, 'files');
+            return $this->getAllByUserId($loggedInUser->userId);
         }
     }
 
@@ -84,6 +95,7 @@ class FileUploadService{
     }
 
 
+
     public function update($requestBody){
         $this->save($requestBody);
     }
@@ -96,7 +108,9 @@ class FileUploadService{
             $fileUrlArr = explode("/", $fileUrl);
             $fileName = $fileUrlArr[count($fileUrlArr)-1];
             try{
-                unlink(__DIR__."/../images/".$fileModel['purpose']."/".$fileName);
+                if(file_exists(__DIR__."/../images/".$fileModel['purpose']."/".$fileName)){
+                    unlink(__DIR__."/../images/".$fileModel['purpose']."/".$fileName);
+                }
             }
             catch(Exception $e){
                 sendResponse(false, 500, "Could not remove file from disk. Please try again or report to admin.");
@@ -112,7 +126,7 @@ class FileUploadService{
             return $result;
         }
         else{
-            echo sendResponse(false, 404, "Not Found");
+            echo sendResponse(false, 404, "Data for request Id not found.");
         }
     }
 

@@ -1,6 +1,7 @@
 <?php
 
-
+require_once __DIR__."/models/FileUpload.php";
+require_once __DIR__."/service/FileUploadService.php";
 foreach (glob(__DIR__ . "/models/*.php") as $file) {
     require_once $file;
 }
@@ -105,9 +106,10 @@ function isTokenValid($token)
 
 function getUserFromToken($token)
 {
-    if ($token != null && isTokenValid($token)) {
+    if ($token != null) {
         $jsonData = makeCurlRequest(AppConstants::MCQBUDDY_GET_USER_BY_TOKEN, 'POST', json_encode(["token" => $token]));
-        return $jsonData;
+        $user = json_decode($jsonData)->data;
+        return $user;
     }
 }
 
@@ -129,7 +131,11 @@ function getUserIdFromToken($token)
 
 function getRequestBody()
 {
-    return json_decode(file_get_contents("php://input"));
+    $requestBody = json_decode(file_get_contents("php://input"));
+    if($requestBody == null){
+        $requestBody = new stdClass();
+    }
+    return $requestBody;
 }
 
 function assertRequestPut()
@@ -303,7 +309,7 @@ function makeRequestBodySafe($requestBody){
         $arrayKeys = array_keys($array);
         for($i = 0; $i < count($arrayKeys); $i++){
             $key = $arrayKeys[$i];
-            if($array[$key] != null && strlen($array[$key])>0){
+            if($array[$key] != null && gettype($array[$key]) == "string" && strlen($array[$key])>0){
                 $requestBody->$key = htmlentities($array[$key]);
             }
         }
@@ -313,12 +319,64 @@ function makeRequestBodySafe($requestBody){
 }
 
 
-function uploadImage($file, $path){
-    $target_dir = $path;
-    print_r($file);
-    $imgUrl = basename($file["name"]);
-    $target_file = $target_dir.$imgUrl;
-    $target_file = str_replace(" ", "_", $target_file);
+function uploadFile($file, $purpose, $userId){
+    if($purpose == "questions"){
+        $target_dir = AppConstants::QUESTIONS_IMAGE_DIR;
+    }
+    else {
+        $target_dir = AppConstants::FILES_DIR;
+    }
+
+   
+    $fileName = basename($file["name"]);
+    $generatedFileName = str_replace(" ", "_", getUUID().$fileName);
+
+
+    $target_file = $target_dir.$generatedFileName;
+     //get file extension
+     $fileInfo = pathinfo($target_file);
+    $fileExtension = $fileInfo['extension'];
+    if($purpose == "questions"){
+        if(!in_array($fileExtension, AppConstants::EXTENSIONS_FOR_IMAGES)){
+            echo sendResponse(false, 400, "File should be any of the ".implode(", ",AppConstants::EXTENSIONS_FOR_IMAGES));
+        }
+    }
+    else if($purpose == "files"){
+        if(!in_array($fileExtension, AppConstants::EXTENSIONS_FOR_FILES)){
+            echo sendResponse(false, 400, "File should be any of the ".implode(", ",AppConstants::EXTENSIONS_FOR_FILES));
+        }
+    }
+
+
+
+    //get the file size
+    $fileSize = filesize($file['tmp_name']);
+
+    if($fileSize > AppConstants::MAX_FILE_SIZE){
+        echo sendResponse(false, 400, "File size should be less than ".AppConstants::MAX_FILE_SIZE / (1024*1024). "Mb" );
+    }
     $tmpName = $file['tmp_name'];
-    move_uploaded_file($tmpName, $target_file);
+
+
+    try{
+        if(move_uploaded_file($tmpName, $target_file)){
+            //save the file details in database
+            $model = new FileUpload();
+            $model->fileUrl = AppConstants::BASE_URL."/"."images/".$purpose."/".$generatedFileName;
+            $model->userId = $userId;
+            $model->purpose = $purpose;
+            $model->isPublic = 0;
+
+            //file upload service
+            $fileUploadService = new FileUploadService();
+            $fileUploadService->save($model);
+        }
+        else{
+            echo sendResponse(false, 500, "Internal Server Occured. Please Try again. Or inform to administrator");
+        }
+
+    }
+    catch(Exception $e){
+        echo sendResponse(false, 500, $e->getMessage());
+    }
 }

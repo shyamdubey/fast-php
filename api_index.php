@@ -42,7 +42,10 @@ $spliced_arr = explode("/", $uri_arr[1]);
 
 
 //authorize the request for token only if it is not exempted
-if(!in_array($spliced_arr, $exemptedRoutes) && !in_array($requestMethod, $exemptedRoutesMap[array_search($spliced_arr, $exemptedRoutes)]['allowedMethods'])){
+$isRouteExempted = in_array($spliced_arr, $exemptedRoutes);
+$exemptedRouteAllowedMethod = !in_array($requestMethod, $exemptedRoutesMap[array_search($spliced_arr, $exemptedRoutes)]['allowedMethods']);
+
+// if(!$isRouteExempted && $exemptedRouteAllowedMethod){
 
 //is request authorized.
 if(!isset($headers['Authorization'])){
@@ -61,11 +64,14 @@ else{
     }
     else{
         $userDetails = getUserFromToken($token);
-        $userDetails = json_decode($userDetails);
+        if($userDetails == null){
+            echo sendResponse(false, 401, "Unauthorized access.");
+        }
     }
 }
 
-}
+// }
+
 
 
 

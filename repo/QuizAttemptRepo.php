@@ -111,6 +111,12 @@ class QuizAttemptRepo{
         return mysqli_fetch_assoc($res);
     }
 
+    function getLastestByUserId($userId){
+        $sql = "SELECT A.quizAttemptId FROM ".$this->tableName." A  where A.userId = $userId order by A.quizAttemptDatetime desc limit 0, 1"  ;
+        $res = mysqli_query($this->conn, $sql);
+        return mysqli_fetch_assoc($res);
+    }
+
     function deleteById($id){
         $sql = "DELETE FROM ".$this->tableName." where quizAttemptId = '$id'";
         $res = mysqli_query($this->conn, $sql);

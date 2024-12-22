@@ -4,14 +4,14 @@ require_once __DIR__."/../utils/AppConstants.php";
 require_once __DIR__."/../assets/dbconn.php";
 require_once __DIR__."/../functions.php";
 
-class CategoryRepo{
+class QuizStudentMappingRepo{
     public $tableName;
     public $conn, $now;
 
 
     public function __construct(){
         global $conn, $now;
-        $this->tableName = AppConstants::CATEGORY_TABLE;
+        $this->tableName = AppConstants::QUIZ_STUDENT_MAPPING_TABLE;
         $this->conn = $conn;
         $this->now = $now;
         $this->createTable();
@@ -20,26 +20,15 @@ class CategoryRepo{
 
     private function createTable(){
         $sql = 'CREATE TABLE IF NOT EXISTs '.$this->tableName.'  (
-        categoryId varchar(255) not null,
-        categoryName varchar(1000) not null,
-        categoryStatus int default 1,
+        quizStudentMappingId varchar(255) not null,
+        quizId varchar(255) not null,
+        studentId varchar(255) not null,
         userId int not null,
-        categoryDatetime varchar(45) not null,
-        primary key (categoryId)
-
+        quizStudentMappingtime varchar(45) not null,
+        primary key (quizStudentMappingId),
+        constraint FK_QSRel_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId)
         )';
         $res = mysqli_query($this->conn, $sql);
-        if($res){
-            return true;
-        }
-        return false;
-
-    }
-
-
-    function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (categoryId, categoryName, categoryStatus, userId, categoryDatetime) 
-        values ('".getUUID()."', '$model->categoryName', 1, $model->userId, '$this->now')";
         try{
             $res = mysqli_query($this->conn, $sql);
          }
@@ -52,25 +41,40 @@ class CategoryRepo{
          else {
              return false;
          }
+
+    }
+
+
+    function save($model){
+        $sql = "INSERT INTO ".$this->tableName." (quizStudentMappingId, quizId, studentId,  userId, quizStudentMappingtime) 
+        values ('".getUUID()."', '$model->quizId', '$model->studentId', $model->userId, '$this->now')";
+        if(mysqli_query($this->conn, $sql)){
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 
     function getAll(){
-        $sql = "SELECT * FROM ".$this->tableName."";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            $row['user'] = getUserById($row['userId']);
             $data[] = $row;
         }
 
         return $data;
     }
 
-    function getAllByUserId($userId){
-        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId";
+    function getAllByQuizId($quizId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId'" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            $row['user'] = getUserById($row['userId']);
             $data[] = $row;
         }
 
@@ -78,13 +82,13 @@ class CategoryRepo{
     }
 
     function getById($id){
-        $sql = "SELECT * FROM ".$this->tableName." where categoryId = '$id'";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizStudentMappingId = '$id'"  ;
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
 
     function deleteById($id){
-        $sql = "DELETE FROM ".$this->tableName." where categoryId = '$id'";
+        $sql = "DELETE FROM ".$this->tableName." where quizStudentMappingId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         if($res){
             return true;
@@ -94,19 +98,4 @@ class CategoryRepo{
         }
     }
 
-    function update($model){
-        $sql = "UPDATE ".$this->tableName." set categoryName = '$model->categoryName' where categoryId = '$model->categoryId'";
-        try{
-            $res = mysqli_query($this->conn, $sql);
-            if($res){
-                return true;
-            }
-            else{
-                return false;
-            }
-        }
-        catch(Exception $e){
-            echo sendResponse(false, 500, $e->getMessage());
-        }
-    }
 }

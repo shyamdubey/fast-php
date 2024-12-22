@@ -2,11 +2,13 @@
 
 require_once __DIR__."/../utils/AppConstants.php";
 require_once __DIR__."/../assets/dbconn.php";
+require_once __DIR__."/QuestionImageMappingRepo.php";
 require_once __DIR__."/../functions.php";
 
 class QuestionRepo{
     public $tableName;
     public $conn, $now;
+    private $questionImageMappingRepo;
 
 
     public function __construct(){
@@ -14,6 +16,7 @@ class QuestionRepo{
         $this->tableName = AppConstants::QUESTIONS_TABLE;
         $this->conn = $conn;
         $this->now = $now;
+        $this->questionImageMappingRepo = new QuestionImageMappingRepo();
         $this->createTable();
 
     }
@@ -68,8 +71,13 @@ class QuestionRepo{
     function getAll(){
         $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId";
         $data = [];
+        $images = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            if($row['haveImages'] == 1){
+                $images = $this->questionImageMappingRepo->getAllByQuestionId($row['questionId']);
+            }
+            $row['images'] = $images;
             $data[] = $row;
         }
 
@@ -77,14 +85,25 @@ class QuestionRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId A.userId = $userId";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = $userId";
+        $images = [];
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            if($row['haveImages'] == 1){
+                $images = $this->questionImageMappingRepo->getAllByQuestionId($row['questionId']);
+            }
+            $row['images'] = $images;
             $data[] = $row;
         }
 
         return $data;
+    }
+
+    function getLatestQuestionByUserId($userId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = '$userId' order by A.questionDatetime desc limit 0,1";
+        $res = mysqli_query($this->conn, $sql);
+        return mysqli_fetch_assoc($res);
     }
 
     function getById($id){
@@ -102,5 +121,20 @@ class QuestionRepo{
         else{
             return false;
         }
+    }
+
+    function getQuestionsWhichAreNotMappedInQuiz($quizId, $userId){
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId') and A.userId = $userId";
+        $data = [];
+        try{
+            $res = mysqli_query($this->conn, $sql);
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
+        }
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+        return $data;
     }
 }

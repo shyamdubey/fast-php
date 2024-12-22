@@ -3,6 +3,8 @@
 require_once __DIR__."/../repo/QuestionRepo.php";
 require_once __DIR__."/../models/Question.php";
 require_once __DIR__."/../functions.php";
+require_once __DIR__."/../models/QuestionImageMapping.php";
+require_once __DIR__."/QuestionImageMappingService.php";
 
 class QuestionService{
 
@@ -38,16 +40,30 @@ class QuestionService{
         $model->marks = $requestBody->marks;
         $model->categoryId = $requestBody->categoryId;
         $model->userId = $requestBody->userId;
-
         //check whether have images
         if(isset($requestBody->haveImages)){
-            $model->haveImages = $requestBody->haveImages;
+            $model->haveImages = $requestBody->haveImages; 
         }
-
-        
         $this->questionRepo->save($model);
-        
 
+        $imageArr = $requestBody->imageArr;
+        if(count($imageArr) > 0){
+            $savedQuestion = $this->getLatestQuestionByUserId($model->userId);
+            foreach($imageArr as $img){
+                //get the latest question added
+                if($savedQuestion != null){
+                    $mapping = new QuestionImageMapping();
+                    $mapping->questionId = $savedQuestion['questionId'];
+                    $mapping->imageId = $img->fileUploadId;
+                    $mapping->userId = $model->userId;
+                    $questionImageMappingService = new QuestionImageMappingService();
+                    $questionImageMappingService->save($mapping);
+                }
+                    
+            }
+        }
+        
+        echo sendResponse(true, 201, "Question Saved Successfully.");
     }
 
 
@@ -55,12 +71,30 @@ class QuestionService{
         return $this->questionRepo->getAllByUserId($userId);
     }
 
+    public function myQuestions(){
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            return $this->getAllByUserId($loggedInUser->userId);
+        }
+    }
 
     public function update($requestBody){
         $this->save($requestBody);
     }
 
     public function deleteById($id){
+        //if mapping exists with images then we have to delete those mappings as well 
+        $question = $this->getById($id);
+        if($question != null){
+            if($question['haveImages'] == 1){
+                //get the mappings
+                $questionImageMappingService = new QuestionImageMappingService();
+                $questionImageMappings = $questionImageMappingService->getAllByQuestionId($question['questionId']);
+                foreach($questionImageMappings as $mapping){
+                    $questionImageMappingService->deleteById($mapping['queImgMappingId']);
+                }
+            }
+        }
         return $this->questionRepo->deleteById($id);
     }
 
@@ -72,6 +106,10 @@ class QuestionService{
         else{
             echo sendResponse(false, 404, "Not Found");
         }
+    }
+
+    private function getLatestQuestionByUserId($userId){
+            return $this->questionRepo->getLatestQuestionByUserId($userId);
     }
 
 

@@ -25,6 +25,9 @@ class QuizAttemptDetailedInfoService{
         $model->quizId = $requestBody->quizId;
         $model->questionId = $requestBody->questionId;
         $model->userId = $requestBody->userId;
+        $model->quizAttemptId = $requestBody->quizAttemptId;
+        $model->isCorrect = $requestBody->isCorrect;
+        $model->userSelectedOption = $requestBody->userSelectedOption;
         $this->quizAttemptDetailedInfoRepo->save($model);
         
 

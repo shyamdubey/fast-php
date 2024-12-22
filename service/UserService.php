@@ -21,7 +21,7 @@ class UserService{
             !isset($requestBody->password)
         )
         {
-            echo sendResponse(false, 400, 'Missing required parameters.');
+            sendResponse(false, 400, 'Missing required parameters.');
         }
 
         return createUserAccount($requestBody);
@@ -31,6 +31,15 @@ class UserService{
 
     public function getByUsernameOrEmailOrNameLike($val){
         return getUsersWhereNameEmailUsernameLike($val);
+    }
+
+    public function getByEmail($email){
+        $data = getUsersByEmail($email);
+        if($data == null){
+            sendResponse(false, 404, "No user found.");
+        }else{
+            return $data;
+        }
     }
 
     public function getByPagination($page){
@@ -45,11 +54,10 @@ class UserService{
     public function myData(){
         $loggedInUser = getLoggedInUserInfo();
         if($loggedInUser != null){
-            $user = json_decode($loggedInUser);
-            return $user;
+            return $loggedInUser;
         }
         else{
-            echo sendResponse(false, 404, 'Data not found.');
+            sendResponse(false, 404, 'Data not found.');
         }
     }
 

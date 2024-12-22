@@ -38,6 +38,37 @@ class SpaceUserMappingService{
     }
 
 
+    public function bulkMapByEmail($requestBody){
+        if(
+            !isset($requestBody->studentsList) || $requestBody->spaceId && count($requestBody->studentsList) < 1
+        )
+        {
+            echo sendResponse(false, 400, 'Missing Required Parameters.');
+        }
+        $mappedCount = 0;
+        $unMappedCount = 0;
+        $studentsList = $requestBody->studentsList;
+        foreach($studentsList as $student){
+            $model = new SpaceUserMapping();
+            $model->spaceId = $requestBody->spaceId;
+            $model->studentId = $student->userId;
+            $model->userId = $requestBody->userId;
+            if($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null){
+                if($this->spaceUserMappingRepo->save($model)){
+                    $mappedCount = $mappedCount + 1;
+                }
+            }
+        }
+        $unMappedCount = count($studentsList) - $mappedCount;
+        if($unMappedCount == 0){
+            sendResponse(true, 200, "Mapped successfully.");
+        }
+        else{
+            sendResponse(true, 200, $mappedCount." Student(s) mapped successfully. Found ".$unMappedCount." student(s) already mapped with this space.");
+        }
+        
+    }
+
     public function mapByEmail($requestBody){
         $model = new SpaceUserMapping();
         if(
@@ -53,15 +84,25 @@ class SpaceUserMappingService{
             $model->spaceId = $requestBody->spaceId;
             $model->studentId = $user->userId;
             $model->userId = $requestBody->userId;
-            if($this->spaceUserMappingRepo->save($model)){
-                echo sendResponse(true, 201, "Mapped successfully");
+            if($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null){
+                if($this->spaceUserMappingRepo->save($model)){
+                    echo sendResponse(true, 201, "Mapped successfully");
+                }
             }
+            else{
+                echo sendResponse(false, 500, "Student Already Mapped.");
+            }
+            
         }
         else{
             echo sendResponse(false, 404, 'User not found.');
         }
     }
 
+
+    public function getByStudentIdAndSpaceId($studentId, $spaceId){
+        return $this->spaceUserMappingRepo->getByStudentIdAndSpaceId($studentId, $spaceId);
+    }
 
     public function getAllByUserId($userId){
         return $this->spaceUserMappingRepo->getAllByUserId($userId);
