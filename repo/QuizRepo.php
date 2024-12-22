@@ -25,6 +25,7 @@ class QuizRepo{
         quizDescription varchar(4000) ,
         quizVisibility varchar(255) not null,
         quizStatus int default 1,
+        noOfQuestion int not null,
         userId int not null,
         quizDatetime varchar(45) not null,
         quizAttemptedCount int default 0,
@@ -49,8 +50,8 @@ class QuizRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizId, quizName, quizDescription, quizVisibility, quizStatus, userId, quizDatetime, quizAttemptedCount, quizViews) 
-        values ('".getUUID()."', '$model->quizName', '$model->quizDescription', '$model->quizVisibility', 1, $model->userId, '$this->now', 0, 0)";
+        $sql = "INSERT INTO ".$this->tableName." (quizId, quizName, quizDescription, quizVisibility, quizStatus, userId, quizDatetime, quizAttemptedCount, quizViews, noOfQuestions) 
+        values ('".getUUID()."', '$model->quizName', '$model->quizDescription', '$model->quizVisibility', 1, $model->userId, '$this->now', 0, 0, $model->noOfQuestions)";
         if(mysqli_query($this->conn, $sql)){
             return true;
         }

@@ -1,15 +1,18 @@
 <?php
 
 require_once __DIR__."/../repo/QuizQuestionRelationRepo.php";
+require_once __DIR__."/../repo/QuestionRepo.php";
 require_once __DIR__."/../models/QuizQuestionRelation.php";
 require_once __DIR__."/../functions.php";
 
 class QuizQuestionRelationService{
 
-    public $quizQueRelRepo;
+    private $quizQueRelRepo;
+    private $questionRepo;
 
     public function __construct(){
         $this->quizQueRelRepo = new QuizQuestionRelationRepo();
+        $this->questionRepo = new QuestionRepo();
     }
 
     public function getAll(){
@@ -52,6 +55,18 @@ class QuizQuestionRelationService{
         else{
             echo sendResponse(false, 404, "Not Found");
         }
+    }
+
+
+    public function getNotMappedQuestions($quizId){
+        $questionList = [];
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            $questionList = $this->questionRepo->getQuestionsWhichAreNotMappedInQuiz($quizId, $loggedInUser->userId);
+            
+        }
+        return $questionList;
+
     }
 
 

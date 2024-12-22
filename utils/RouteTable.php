@@ -20,6 +20,7 @@ class RouteTable{
         $this->registerRoute('user/me', 'UserService', 'myData', ['GET']);
         $this->registerRoute('user/page/{val}', 'UserService', 'getByPagination', ['GET']);
         $this->registerRoute('user/getById/{val}', 'UserService', 'getById', ['GET']);
+        $this->registerRoute('user/getByEmail/{val}', 'UserService', 'getByEmail', ['GET']);
         $this->registerRoute('user/filter/{val}', 'UserService', 'getByUsernameOrEmailOrNameLike', ['GET']);
 
 
@@ -40,6 +41,7 @@ class RouteTable{
           //register route for space students mapping
           $this->registerRoute('spaceStudentMapping', 'SpaceUserMappingService', '', ['GET', 'POST']);
           $this->registerRoute('spaceStudentMapping/mapByEmail', 'SpaceUserMappingService', 'mapByEmail', ['POST']);
+          $this->registerRoute('spaceStudentMapping/bulkMapByEmail', 'SpaceUserMappingService', 'bulkMapByEmail', ['POST']);
           $this->registerRoute('spaceStudentMapping/getAllByUserId/{val}', 'SpaceUserMappingService', 'getAllByUserId', ['GET']);
           $this->registerRoute('spaceStudentMapping/getAllByStudentId/{val}', 'SpaceUserMappingService', 'getAllByStudentId', ['GET']);
           $this->registerRoute('spaceStudentMapping/getBySpaceId/{val}', 'SpaceUserMappingService', 'getAllBySpaceId', ['GET']);
@@ -53,6 +55,7 @@ class RouteTable{
         $this->registerRoute('quiz/public', 'QuizService', 'getPublicQuiz', ['GET', 'POST']);
         $this->registerRoute('quiz/private', 'QuizService', 'getPrivateQuiz', ['GET', 'POST']);
         $this->registerRoute('quiz/getAllByUserId/{val}', 'QuizService', 'getAllByUserId', ['GET']);
+        $this->registerRoute('quiz/myQuizzes', 'QuizService', 'myQuizzes', ['GET']);
         $this->registerRoute('quiz/deleteById/{val}', 'QuizService', 'deleteById', ['DELETE']);
         $this->registerRoute('quiz/getById/{val}', 'QuizService', 'getById', ['GET']);
         $this->registerRoute('quiz/update', 'QuizService', 'update', ['PUT', 'POST']);
@@ -67,21 +70,46 @@ class RouteTable{
         $this->registerRoute('question/getById/{val}', 'QuestionService', 'getById', ['GET']);
         $this->registerRoute('question/update', 'QuestionService', 'update', ['PUT', 'POST']);
         $this->registerRoute('question/getByQuizId/{val}', 'QuestionService', 'getByQuizId', ['GET']);
+        $this->registerRoute('question/myQuestion', 'QuestionService', 'myQuestions', ['GET']);
 
 
+        //for Question Image Mapping
+        $this->registerRoute('queImgMapping/getByQueId/{val}', 'QuestionImageMappingService', 'getAllByQuestionId', ['GET']);
+        
+
+
+        
         //for Category
         $this->registerRoute('category', 'CategoryService', '', ['GET', 'POST']);
         $this->registerRoute('category/deleteById/{val}', 'CategoryService', 'deleteById', ['DELETE']);
         $this->registerRoute('category/getById/{val}', 'CategoryService', 'getById', ['GET']);
-        $this->registerRoute('category/update', 'CategoryService', 'update', ['PUT', 'POST']);
+        $this->registerRoute('category/update', 'CategoryService', 'update', ['PUT']);
         $this->registerRoute('category/myCategory', 'CategoryService', 'myCategory', ['GET']);
+
+        //for Files
+        $this->registerRoute('files', 'FileUploadService', '', ['GET']);
+        $this->registerRoute('files/upload', 'FileUploadService', 'upload', ['POST']);
+        $this->registerRoute('files/deleteById/{val}', 'FileUploadService', 'deleteById', ['DELETE']);
+        $this->registerRoute('files/questions', 'FileUploadService', 'filterByQuestions', ['GET']);
+        $this->registerRoute('files/getById/{val}', 'FileUploadService', 'getById', ['GET']);
+        $this->registerRoute('files/update', 'FileUploadService', 'update', ['PUT']);
+        $this->registerRoute('files/myFiles', 'FileUploadService', 'myFiles', ['GET']);
 
         //for Quiz Question Relation
         $this->registerRoute('quizQueRelation', 'QuizQuestionRelationService', '', ['GET', 'POST']);
         $this->registerRoute('quizQueRelation/deleteById/{val}', 'QuizQuestionRelationService', 'deleteById', ['DELETE']);
         $this->registerRoute('quizQueRelation/getById/{val}', 'QuizQuestionRelationService', 'getById', ['GET']);
         $this->registerRoute('quizQueRelation/getByQuizId/{val}', 'QuizQuestionRelationService', 'getByQuizId', ['GET']);
-        $this->registerRoute('quizQueRelation/update', 'QuizQuestionRelationService', 'update', ['PUT', 'POST']);
+        $this->registerRoute('quizQueRelation/update', 'QuizQuestionRelationService', 'update', ['PUT']);
+        $this->registerRoute('quizQueRelation/getNotMappedQuestions/{val}', 'QuizQuestionRelationService', 'getNotMappedQuestions', ['GET']);
+
+
+        //for Quiz Student Mapping
+        $this->registerRoute('quizStudent', 'QuizStudentMappingService', '', ['GET', 'POST']);
+        $this->registerRoute('quizStudent/deleteById/{val}', 'QuizStudentMappingService', 'deleteById', ['DELETE']);
+        $this->registerRoute('quizStudent/getById/{val}', 'QuizStudentMappingService', 'getById', ['GET']);
+        $this->registerRoute('quizStudent/getByQuizId/{val}', 'QuizStudentMappingService', 'getByQuizId', ['GET']);
+        $this->registerRoute('quizStudent/mapByEmail', 'QuizStudentMappingService', 'mapByEmail', ['POST']);
 
 
         //for Quiz Attempt
@@ -90,7 +118,7 @@ class RouteTable{
         $this->registerRoute('quizAttempt/getById/{val}', 'QuizAttemptService', 'getById', ['GET']);
         $this->registerRoute('quizAttempt/getByQuizId/{val}', 'QuizAttemptService', 'getByQuizId', ['GET']);
         $this->registerRoute('quizAttempt/myData', 'QuizAttemptService', 'getByToken', ['GET']);
-        $this->registerRoute('quizAttempt/update', 'QuizAttemptService', 'update', ['PUT', 'POST']);
+        $this->registerRoute('quizAttempt/update', 'QuizAttemptService', 'update', ['PUT']);
         $this->registerRoute('quizAttempt/saveData', 'QuizAttemptService', 'calculateQuizAttempt', ['POST']);
         $this->registerRoute('quizAttempt/startQuiz', 'QuizAttemptService', 'startQuizAttempt', ['POST']);
 

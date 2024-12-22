@@ -3,10 +3,13 @@
 require_once __DIR__."/../utils/AppConstants.php";
 require_once __DIR__."/../assets/dbconn.php";
 require_once __DIR__."/../functions.php";
+require_once __DIR__."/QuestionImageMappingRepo.php";
+
 
 class QuizQuestionRelationRepo{
     public $tableName;
     public $conn, $now;
+    private $questionImageMappingRepo;
 
 
     public function __construct(){
@@ -15,6 +18,8 @@ class QuizQuestionRelationRepo{
         $this->conn = $conn;
         $this->now = $now;
         $this->createTable();
+        $this->questionImageMappingRepo = new QuestionImageMappingRepo();
+
 
     }
 
@@ -73,8 +78,13 @@ class QuizQuestionRelationRepo{
     function getAllByQuizId($quizId){
         $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on B.questionId = A.questionId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId where A.quizId = '$quizId'" ;
         $data = [];
+        $images = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            if($row['haveImages'] == 1){
+                $images = $this->questionImageMappingRepo->getAllByQuestionId($row['questionId']);
+            }
+            $row['images'] = $images;
             $data[] = $row;
         }
 
@@ -97,4 +107,5 @@ class QuizQuestionRelationRepo{
             return false;
         }
     }
+
 }

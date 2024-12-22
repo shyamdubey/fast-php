@@ -59,6 +59,14 @@ class QuizService{
     }
 
 
+    public function myQuizzes(){
+        $quizList = [];
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            $quizList = $this->getAllByUserId($loggedInUser->userId);
+        }
+        return $quizList;
+    }
     public function getAllByUserId($userId){
         return $this->quizRepo->getAllByUserId($userId);
     }

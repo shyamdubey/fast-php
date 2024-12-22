@@ -103,11 +103,23 @@ class SpaceUserMappingRepo{
         return $data;
     }
 
+    function getByStudentIdAndSpaceId($studentId, $spaceId){
+        $sql = "SELECT * FROM ".$this->tableName." where studentId = $studentId and spaceId = '$spaceId'";
+        $res = mysqli_query($this->conn, $sql);
+        $row = mysqli_fetch_assoc($res);
+        if($row != null){
+            $row['user'] = getUserById($row['userId']);
+        }
+        return $row;
+    }
+
     function getById($id){
         $sql = "SELECT * FROM ".$this->tableName." where spaceUserMappingId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         $row = mysqli_fetch_assoc($res);
-        $row['user'] = getUserById($row['userId']);
+        if($row != null){
+            $row['user'] = getUserById($row['userId']);
+        }
         return $row;
 
     }

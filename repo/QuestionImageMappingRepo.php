@@ -28,7 +28,7 @@ class QuestionImageMappingRepo{
         queImgMappingStatus int default 1,
         primary key (queImgMappingId),
         constraint FK_que_img_map_que Foreign Key (questionId) references '.AppConstants::QUESTIONS_TABLE.' (questionsId),
-        constraint FK_que_img_map_img Foreign Key (imageId) references '.AppConstants::QUESTIONS_TABLE.' (imageId)
+        constraint FK_que_img_map_img Foreign Key (imageId) references '.AppConstants::FILE_UPLOAD_TABLE.' (fileUploadId)
         )';
         $res = mysqli_query($this->conn, $sql);
         if($res){
@@ -69,7 +69,7 @@ class QuestionImageMappingRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::IMAGES_TABLE." C on C.imageId = A.imageId where A.userId = $userId";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::FILE_UPLOAD_TABLE." C on C.fileUploadId = A.imageId where A.userId = $userId";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -80,7 +80,7 @@ class QuestionImageMappingRepo{
     }
 
     function getAllByQuestionId($questionId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::IMAGES_TABLE." C on C.imageId = A.imageId A.questionId = '$questionId'";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::FILE_UPLOAD_TABLE." B on B.fileUploadId = A.imageId where A.questionId = '$questionId'";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -91,7 +91,7 @@ class QuestionImageMappingRepo{
     }
 
     function getById($id){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::IMAGES_TABLE." C on C.imageId = A.imageId where A.queImgMappingId = '$id'";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUESTIONS_TABLE." B on A.questionId = B.questionId inner join ".AppConstants::FILE_UPLOAD_TABLE." C on C.fileUploadId = A.imageId where A.queImgMappingId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }

@@ -36,19 +36,28 @@ class CategoryService{
 
     public function myCategory(){
         $loggedInUser = getLoggedInUserInfo();
-        $loggedInUser = json_decode($loggedInUser);
         if($loggedInUser != null){
-            return $this->getAllByUserId($loggedInUser->user_id);
+            return $this->getAllByUserId($loggedInUser->userId);
         }
     }
 
 
     public function update($requestBody){
-        $this->save($requestBody);
+        if($this->categoryRepo->update($requestBody)){
+            echo sendResponse(true, 200, "Category Updated Successfully.");
+        }
+        else{
+            echo sendResponse(false, 500, "Internal Server Error. Please try again.");
+        }
     }
 
     public function deleteById($id){
-        return $this->categoryRepo->deleteById($id);
+        if($this->categoryRepo->deleteById($id)){
+            echo sendResponse(true, 200, "Deleted Successfully.");
+        }
+        else{
+            echo sendResponse(false, 500, "Internal Server Error. Please Try Again.");
+        }
     }
 
     public function getById($id){
