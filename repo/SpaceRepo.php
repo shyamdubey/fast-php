@@ -86,6 +86,8 @@ class SpaceRepo{
         return $data;
     }
 
+    
+
     function getAllByVisibility($visibility){
         $sql = "SELECT * FROM ".$this->tableName." where spaceVisibility = $visibility";
         $data = [];

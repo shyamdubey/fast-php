@@ -76,7 +76,10 @@ class QuizService{
     }
 
     public function getBySpaceNotMappedData($spaceId){
-        return $this->quizRepo->getAllQuizzesWhichAreNotMappedToSpaceId($spaceId);
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            return $this->quizRepo->getAllQuizzesWhichAreNotMappedToSpaceIdAndUserId($spaceId, $loggedInUser->userId);
+        }
     }
 
     public function getPrivateQuiz(){

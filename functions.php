@@ -113,6 +113,23 @@ function getUserFromToken($token)
     }
 }
 
+function performMcqbuddyLogin($requestBody){
+    $response = makeCurlRequest(AppConstants::MCQBUDDY_LOGIN_API, 'POST', json_encode($requestBody));
+    if($response != null){
+        $response = json_decode($response);
+        if($response->statusCode == 200){
+            return $response->data;
+        }
+        else{
+            return $response->data;
+        }
+    }
+    else{
+        sendResponse(false, 500, "Something went wrong.");
+    }
+    
+}
+
 function getUserIdFromToken($token)
 {
     if ($token != null && $token != "") {

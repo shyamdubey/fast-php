@@ -52,7 +52,6 @@ class SpaceService{
 
     public function mySpaces(){
         $loggedInUser = getLoggedInUserInfo();
-        $loggedInUser = json_decode($loggedInUser);
         if($loggedInUser != null){
             return $this->getAllByUserId($loggedInUser->userId);
         }

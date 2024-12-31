@@ -79,4 +79,47 @@ class QuizStudentMappingService{
     }
 
 
+    public function bulkMapByEmail($requestBody){
+        if(
+            !isset($requestBody->studentsList) || !isset($requestBody->quizId) && count($requestBody->studentsList) < 1
+        )
+        {
+            echo sendResponse(false, 400, 'Missing Required Parameters.');
+        }
+        $mappedCount = 0;
+        $unMappedCount = 0;
+        $studentsList = $requestBody->studentsList;
+        foreach($studentsList as $student){
+            $model = new QuizStudentMapping();
+            $model->quizId = $requestBody->quizId;
+            $model->studentId = $student->userId;
+            $model->userId = $requestBody->userId;
+            if($this->getByQuizIdAndStudentId($model->quizId, $model->studentId) == null){
+                if($this->quizStudentMappingRepo->save($model)){
+                    $mappedCount = $mappedCount + 1;
+                }
+            }
+        }
+        $unMappedCount = count($studentsList) - $mappedCount;
+        if($unMappedCount == 0){
+            sendResponse(true, 200, "Mapped successfully.");
+        }
+        else{
+            sendResponse(true, 200, $mappedCount." Student(s) mapped successfully. Found ".$unMappedCount." student(s) already mapped with this space.");
+        }
+        
+    }
+
+
+    public function getByQuizIdAndStudentId($quizId, $userId){
+        if($userId != null && $userId > 0 && $quizId != null){
+            $this->quizStudentMappingRepo->getByQuizIdAndStudentId($quizId, $userId);
+        }
+        else{
+            return null;
+        }
+    }
+
+
+
 }
