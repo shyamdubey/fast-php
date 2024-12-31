@@ -45,7 +45,7 @@ $spliced_arr = explode("/", $uri_arr[1]);
 $isRouteExempted = in_array($spliced_arr, $exemptedRoutes);
 $exemptedRouteAllowedMethod = !in_array($requestMethod, $exemptedRoutesMap[array_search($spliced_arr, $exemptedRoutes)]['allowedMethods']);
 
-// if(!$isRouteExempted && $exemptedRouteAllowedMethod){
+if(!$isRouteExempted){
 
 //is request authorized.
 if(!isset($headers['Authorization'])){
@@ -70,7 +70,7 @@ else{
     }
 }
 
-// }
+}
 
 
 

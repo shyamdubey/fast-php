@@ -69,12 +69,18 @@ class QuizStudentMappingRepo{
         return $data;
     }
 
+    function getByQuizIdAndStudentId($quizId, $studentId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId' and A.studentId = $studentId"  ;
+        $res = mysqli_query($this->conn, $sql);
+        return mysqli_fetch_assoc($res);
+    }
+
     function getAllByQuizId($quizId){
         $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId'" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
-            $row['user'] = getUserById($row['userId']);
+            $row['user'] = getUserById($row['studentId']);
             $data[] = $row;
         }
 

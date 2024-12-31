@@ -7,6 +7,7 @@ class RouteTable{
 
         // //exempt routes for token validation
         $this->registerRoutesForExemptions("user/", ['POST']);
+        $this->registerRoutesForExemptions("user/login", ['POST']);
 
 
 
@@ -18,6 +19,7 @@ class RouteTable{
         //user routes
         $this->registerRoute('user', 'UserService', '', ['GET', 'POST']);
         $this->registerRoute('user/me', 'UserService', 'myData', ['GET']);
+        $this->registerRoute('user/login', 'UserService', 'performLogin', ['POST']);
         $this->registerRoute('user/page/{val}', 'UserService', 'getByPagination', ['GET']);
         $this->registerRoute('user/getById/{val}', 'UserService', 'getById', ['GET']);
         $this->registerRoute('user/getByEmail/{val}', 'UserService', 'getByEmail', ['GET']);
@@ -36,6 +38,7 @@ class RouteTable{
          $this->registerRoute('space/getByCode/{val}', 'SpaceService', 'getBySpaceJoinCode', ['GET']);
          $this->registerRoute('space/getByUrl/{val}', 'SpaceService', 'getBySpaceUrl', ['GET']);
          $this->registerRoute('space/updateColors', 'SpaceService', 'updateColors', ['POST']);
+
  
 
           //register route for space students mapping
@@ -47,6 +50,7 @@ class RouteTable{
           $this->registerRoute('spaceStudentMapping/getBySpaceId/{val}', 'SpaceUserMappingService', 'getAllBySpaceId', ['GET']);
           $this->registerRoute('spaceStudentMapping/deleteById/{val}', 'SpaceUserMappingService', 'deleteById', ['DELETE']);
           $this->registerRoute('spaceStudentMapping/getById/{val}', 'SpaceUserMappingService', 'getById', ['GET']);
+          $this->registerRoute('spaceStudentMapping/getShared', 'SpaceUserMappingService', 'getShared', ['GET']);
           $this->registerRoute('spaceStudentMapping/update', 'SpaceUserMappingService', 'update', ['PUT', 'POST']);
   
 
@@ -110,6 +114,8 @@ class RouteTable{
         $this->registerRoute('quizStudent/getById/{val}', 'QuizStudentMappingService', 'getById', ['GET']);
         $this->registerRoute('quizStudent/getByQuizId/{val}', 'QuizStudentMappingService', 'getByQuizId', ['GET']);
         $this->registerRoute('quizStudent/mapByEmail', 'QuizStudentMappingService', 'mapByEmail', ['POST']);
+        $this->registerRoute('quizStudent/bulkMapByEmail', 'QuizStudentMappingService', 'bulkMapByEmail', ['POST']);
+
 
 
         //for Quiz Attempt

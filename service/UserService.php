@@ -29,6 +29,10 @@ class UserService{
 
     }
 
+    public function performLogin($requestBody){
+        return performMcqbuddyLogin($requestBody);
+    }
+
     public function getByUsernameOrEmailOrNameLike($val){
         return getUsersWhereNameEmailUsernameLike($val);
     }

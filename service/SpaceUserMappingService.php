@@ -40,7 +40,7 @@ class SpaceUserMappingService{
 
     public function bulkMapByEmail($requestBody){
         if(
-            !isset($requestBody->studentsList) || $requestBody->spaceId && count($requestBody->studentsList) < 1
+            !isset($requestBody->studentsList) || !isset($requestBody->spaceId) && count($requestBody->studentsList) < 1
         )
         {
             echo sendResponse(false, 400, 'Missing Required Parameters.');
@@ -68,6 +68,7 @@ class SpaceUserMappingService{
         }
         
     }
+
 
     public function mapByEmail($requestBody){
         $model = new SpaceUserMapping();
@@ -127,6 +128,14 @@ class SpaceUserMappingService{
         $loggedInUser = json_decode($loggedInUser);
         if($loggedInUser != null){
             return $this->getAllByUserId($loggedInUser->userId);
+        }
+    }
+
+
+    public function getShared(){
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            return $this->spaceUserMappingRepo->getAllByStudentId($loggedInUser->userId);
         }
     }
 

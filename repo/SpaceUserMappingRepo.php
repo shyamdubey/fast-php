@@ -21,18 +21,24 @@ class SpaceUserMappingRepo{
     private function createTable(){
         $sql = 'CREATE TABLE IF NOT EXISTs '.$this->tableName.'  (
         spaceUserMappingId varchar(255) not null,
-        spaceId varchar(1000) not null,
+        spaceId varchar(255) not null,
         userId int not null,
         studentId int not null,
         spaceUserMappingDatetime varchar(45) not null,
-        primary key (spaceUserMappingId)
+        primary key (spaceUserMappingId),
+        constraint FK_spaceuser foreign key (spaceId) references '.AppConstants::SPACE_TABLE.' (spaceId) 
 
         )';
-        $res = mysqli_query($this->conn, $sql);
+        try{
+            $res = mysqli_query($this->conn, $sql);
         if($res){
             return true;
         }
         return false;
+        }
+        catch(Exception $e){
+            sendResponse(false, 500, $e->getMessage());
+        }
 
     }
 
@@ -92,7 +98,7 @@ class SpaceUserMappingRepo{
     }
 
     function getAllByStudentId($studentId){
-        $sql = "SELECT * FROM ".$this->tableName." where studentId = $studentId";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on B.spaceId = A.spaceId where A.studentId = $studentId";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
