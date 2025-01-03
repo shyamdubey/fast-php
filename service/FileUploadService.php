@@ -1,27 +1,32 @@
 <?php
 
-require_once __DIR__."/../repo/FileUploadRepo.php";
-require_once __DIR__."/../models/FileUpload.php";
-require_once __DIR__."/../functions.php";
+require_once __DIR__ . "/../repo/FileUploadRepo.php";
+require_once __DIR__ . "/../models/FileUpload.php";
+require_once __DIR__ . "/../functions.php";
 
-class FileUploadService{
+class FileUploadService
+{
 
     public $fileUploadRepo;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->fileUploadRepo = new FileUploadRepo();
     }
 
-    public function getAll(){
+    public function getAll()
+    {
         return $this->fileUploadRepo->getAll();
     }
 
-    public function save($requestBody){
+    public function save($requestBody)
+    {
         $model = new FileUpload();
-        if(!isset($requestBody->purpose) 
-        || !isset($requestBody->fileUrl)
-        || !isset($requestBody->userId)
-    ){
+        if (
+            !isset($requestBody->purpose)
+            || !isset($requestBody->fileUrl)
+            || !isset($requestBody->userId)
+        ) {
             echo sendResponse(false, 400, "Missing required parameters.");
         }
 
@@ -29,25 +34,21 @@ class FileUploadService{
         $model->isPublic = $requestBody->isPublic;
         $model->fileUrl = $requestBody->fileUrl;
         $model->userId = $requestBody->userId;
-        try{
-            if($this->fileUploadRepo->save($model)){
+        try {
+            if ($this->fileUploadRepo->save($model)) {
                 echo sendResponse(true, 201, "File upload successfully.");
+            } else {
+                echo sendResponse(false, 500, "Something went wrong. Please try again or inform to Administrator.");
             }
-            else{
-            echo sendResponse(false, 500, "Something went wrong. Please try again or inform to Administrator.");
-
-            }
-        }
-        catch(Exception $ex){
+        } catch (Exception $ex) {
             echo sendResponse(false, 500, $ex->getMessage());
         }
-        
-
     }
 
 
 
-    public function upload($requestBody){
+    public function upload($requestBody)
+    {
         if (isset($_FILES['images'])) {
             $purpose = htmlentities($_POST['purpose']);
             $file = $_FILES['images'];
@@ -64,72 +65,105 @@ class FileUploadService{
     }
 
 
-    public function getAllByUserId($userId){
+    public function getAllByUserId($userId)
+    {
         return $this->fileUploadRepo->getAllByUserId($userId);
     }
 
-    public function myFiles(){
+    public function myFiles()
+    {
         $loggedInUser = getLoggedInUserInfo();
-        if($loggedInUser != null){
+        if ($loggedInUser != null) {
             return $this->getAllByUserId($loggedInUser->userId);
         }
     }
 
-    public function filterByQuestions(){
+    public function filterByQuestions()
+    {
         $loggedInUser = getLoggedInUserInfo();
-        if($loggedInUser != null){
+        if ($loggedInUser != null) {
             return $this->getAllByUserIdAndPurpose($loggedInUser->userId, 'questions');
         }
     }
 
-    public function filterByPurpose($purpose){
+    public function filterByPurpose($purpose)
+    {
         $loggedInUser = getLoggedInUserInfo();
-        if($loggedInUser != null){
+        if ($loggedInUser != null) {
             return $this->getAllByUserIdAndPurpose($loggedInUser->userId, $purpose);
         }
     }
 
 
-    public function getAllByUserIdAndPurpose($userId, $purpose){
+    public function getAllByUserIdAndPurpose($userId, $purpose)
+    {
         return $this->fileUploadRepo->getAllByUserIdAndPurpose($userId, $purpose);
     }
 
 
 
-    public function update($requestBody){
+    public function update($requestBody)
+    {
         $this->save($requestBody);
     }
 
-    public function deleteById($id){
-        //delete file from the disk
-        $fileModel = $this->getById($id);
-        if($fileModel != null){
-            $fileUrl = $fileModel['fileUrl'];
-            $fileUrlArr = explode("/", $fileUrl);
-            $fileName = $fileUrlArr[count($fileUrlArr)-1];
-            try{
-                if(file_exists(__DIR__."/../images/".$fileModel['purpose']."/".$fileName)){
-                    unlink(__DIR__."/../images/".$fileModel['purpose']."/".$fileName);
+    public function deleteById($id)
+    {
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if ($loggedInUser != null) {
+            //get the saved data
+            $data = $this->getById($id);
+            if ($data != null) {
+                if ($loggedInUser->userId == $data['userId']) {
+                    //delete file from the disk
+                    $fileModel = $this->getById($id);
+                    if ($fileModel != null) {
+                        $fileUrl = $fileModel['fileUrl'];
+                        $fileUrlArr = explode("/", $fileUrl);
+                        $fileName = $fileUrlArr[count($fileUrlArr) - 1];
+                        try {
+                            if (file_exists(__DIR__ . "/../images/" . $fileModel['purpose'] . "/" . $fileName)) {
+                                unlink(__DIR__ . "/../images/" . $fileModel['purpose'] . "/" . $fileName);
+                            }
+                        } catch (Exception $e) {
+                            sendResponse(false, 500, "Could not remove file from disk. Please try again or report to admin.");
+                        }
+                    }
+                    return $this->fileUploadRepo->deleteById($id);
+                } else {
+                    sendResponse(false, 403, "You are not authorized user to delete.");
                 }
             }
-            catch(Exception $e){
-                sendResponse(false, 500, "Could not remove file from disk. Please try again or report to admin.");
-            }
-
         }
-        return $this->fileUploadRepo->deleteById($id);
     }
 
-    public function getById($id){
-        $result = $this->fileUploadRepo->getById($id);
-        if($result != null){
-            return $result;
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->fileUploadRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
         }
-        else{
+    }
+
+    public function getById($id)
+    {
+        $result = $this->fileUploadRepo->getById($id);
+        if ($result != null) {
+            return $result;
+        } else {
             echo sendResponse(false, 404, "Data for request Id not found.");
         }
     }
-
-
-
 }

@@ -16,8 +16,9 @@ class QuestionRepo{
         $this->tableName = AppConstants::QUESTIONS_TABLE;
         $this->conn = $conn;
         $this->now = $now;
-        $this->questionImageMappingRepo = new QuestionImageMappingRepo();
         $this->createTable();
+        $this->questionImageMappingRepo = new QuestionImageMappingRepo();
+
 
     }
 
@@ -37,8 +38,11 @@ class QuestionRepo{
         questionVisibility int default 0,
         questionStatus int default 1,
         haveImages int not null default 0,
+        isDeleted int not null default 0,
+        deletedBy int ,
+        deletedOn varchar(50),
         primary key (questionId),
-        constraint FK_question_cat Foreign Key (categoryId) references '.AppConstants::CATEGORY_TABLE.' (categoryId)
+        constraint FK_question_cat Foreign Key (categoryId) references '.AppConstants::CATEGORY_TABLE.' (categoryId) 
 
         )';
         $res = mysqli_query($this->conn, $sql);
@@ -69,7 +73,7 @@ class QuestionRepo{
 
 
     function getAll(){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.isDeleted = 0";
         $data = [];
         $images = [];
         $res = mysqli_query($this->conn, $sql);
@@ -85,7 +89,7 @@ class QuestionRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = $userId";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = $userId and A.isDeleted = 0";
         $images = [];
         $data = [];
         $res = mysqli_query($this->conn, $sql);
@@ -101,7 +105,7 @@ class QuestionRepo{
     }
 
     function getLatestQuestionByUserId($userId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = '$userId' order by A.questionDatetime desc limit 0,1";
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = '$userId' and A.isDeleted = 0 order by A.questionDatetime desc limit 0,1";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
@@ -124,7 +128,7 @@ class QuestionRepo{
     }
 
     function getQuestionsWhichAreNotMappedInQuiz($quizId, $userId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId') and A.userId = $userId";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId') and A.userId = $userId and A.isDeleted = 0";
         $data = [];
         try{
             $res = mysqli_query($this->conn, $sql);
@@ -136,5 +140,52 @@ class QuestionRepo{
             $data[] = $row;
         }
         return $data;
+    }
+
+    function getQuestionsWhichAreNotMappedInQuizByCategoryId($quizId, $userId, $categoryId){
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId') and A.userId = $userId and A.categoryId = '$categoryId' and A.isDeleted = 0";
+        $data = [];
+        try{
+            $res = mysqli_query($this->conn, $sql);
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
+        }
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+        return $data;
+    }
+
+    public function getQuestionsByCategoryIdAndUserId($categoryId, $userId){
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::CATEGORY_TABLE." B on A.categoryId = B.categoryId where A.userId = $userId and A.categoryId = '$categoryId' and A.isDeleted = 0";
+        $images = [];
+        $data = [];
+        $res = mysqli_query($this->conn, $sql);
+        while($row = mysqli_fetch_assoc($res)){
+            if($row['haveImages'] == 1){
+                $images = $this->questionImageMappingRepo->getAllByQuestionId($row['questionId']);
+            }
+            $row['images'] = $images;
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where questionId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
+        }
     }
 }

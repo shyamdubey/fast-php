@@ -45,7 +45,21 @@ class QuestionImageMappingService{
     }
 
     public function deleteById($id){
-        return $this->questionImgMappingRepo->deleteById($id);
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            //get the saved data
+            $data = $this->getById($id);
+            if($data != null){
+                if($loggedInUser->userId == $data['userId']){
+                    return $this->questionImgMappingRepo->deleteById($id);
+                }
+                else{
+                    sendResponse(false, 403, "You are not authorized user to delete.");
+                }
+
+            }
+        }
     }
 
     public function getById($id){
@@ -55,6 +69,25 @@ class QuestionImageMappingService{
         }
         else{
             echo sendResponse(false, 404, "Not Found");
+        }
+    }
+
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->questionImgMappingRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
         }
     }
 

@@ -70,6 +70,7 @@ function makeCurlRequest($url, $requestType, $data)
 }
 
 
+
 function verifyToken($token)
 {
     if ($token != null && $token != "") {
@@ -128,6 +129,20 @@ function performMcqbuddyLogin($requestBody){
         sendResponse(false, 500, "Something went wrong.");
     }
     
+}
+
+function performMcqbuddyLogout($token){
+    $object = new stdClass();
+    $object->token = $token;
+    $response = makeCurlRequest(AppConstants::MCQBUDDY_LOGOUT_API, 'POST', $object);
+    if($response != null){
+        $response = json_decode($response);
+        if($response->status){
+            return true;
+        }
+    }
+    return false;
+
 }
 
 function getUserIdFromToken($token)

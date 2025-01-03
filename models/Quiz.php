@@ -13,6 +13,11 @@ class Quiz{
     public $quizAttemptedCount;
     public $quizViews;
     public $spaceId;
+    public $quizJoinCode;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 
     
 }

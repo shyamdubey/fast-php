@@ -26,9 +26,13 @@ class QuizRepo{
         quizVisibility varchar(255) not null,
         quizStatus int default 1,
         userId int not null,
+        isDeleted int not null default 0,
+        deletedBy int ,
+        deletedOn varchar(50),
         quizDatetime varchar(45) not null,
         quizAttemptedCount int default 0,
         quizViews int default 0,
+        quizJoinCode varchar(255) not null,
         primary key (quizId)
         )";
         $res = mysqli_query($this->conn, $sql);
@@ -49,8 +53,8 @@ class QuizRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizId, quizName, quizDescription, quizVisibility, quizStatus, userId, quizDatetime, quizAttemptedCount, quizViews) 
-        values ('".getUUID()."', '$model->quizName', '$model->quizDescription', '$model->quizVisibility', 1, $model->userId, '$this->now', 0, 0)";
+        $sql = "INSERT INTO ".$this->tableName." (quizId, quizName, quizDescription, quizVisibility, quizStatus, userId, quizDatetime, quizAttemptedCount, quizViews, quizJoinCode) 
+        values ('".getUUID()."', '$model->quizName', '$model->quizDescription', '$model->quizVisibility', 1, $model->userId, '$this->now', 0, 0, '$model->quizJoinCode')";
         if(mysqli_query($this->conn, $sql)){
             return true;
         }
@@ -61,7 +65,7 @@ class QuizRepo{
 
 
     function getAll(){
-        $sql = "SELECT A.* FROM ".$this->tableName." A";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -72,7 +76,7 @@ class QuizRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.userId = $userId";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.userId = $userId and A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -83,7 +87,7 @@ class QuizRepo{
     }
 
     function getAllByVisibility($visibility){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizVisibility = $visibility";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizVisibility = $visibility and A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -95,7 +99,7 @@ class QuizRepo{
 
 
     function getAllQuizzesWhichAreNotMappedToSpaceId($spaceId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizId not in (select B.quizId from ".AppConstants::SPACE_QUIZ_MAPPING_TABLE." B where B.spaceId = '$spaceId')";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizId not in (select B.quizId from ".AppConstants::SPACE_QUIZ_MAPPING_TABLE." B where B.spaceId = '$spaceId') and A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -107,7 +111,7 @@ class QuizRepo{
     }
 
     function getAllQuizzesWhichAreNotMappedToSpaceIdAndUserId($spaceId, $userId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizId not in (select B.quizId from ".AppConstants::SPACE_QUIZ_MAPPING_TABLE." B where B.spaceId = '$spaceId') and A.userId = $userId";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizId not in (select B.quizId from ".AppConstants::SPACE_QUIZ_MAPPING_TABLE." B where B.spaceId = '$spaceId') and A.userId = $userId and A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -121,7 +125,7 @@ class QuizRepo{
     
 
     function getTopByUserId($userId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.userId = $userId order by A.quizDatetime desc limit 0, 1";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.userId = $userId and A.isDeleted = 0 order by A.quizDatetime desc limit 0, 1";
         $res = mysqli_query($this->conn, $sql);
         $row = mysqli_fetch_assoc($res);
         return $row;
@@ -129,6 +133,12 @@ class QuizRepo{
 
     function getById($id){
         $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizId = '$id'";
+        $res = mysqli_query($this->conn, $sql);
+        return mysqli_fetch_assoc($res);
+    }
+
+    function getByJoinCode($code){
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.quizJoinCode = '$code' and isDeleted = 0";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
@@ -141,6 +151,22 @@ class QuizRepo{
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where quizId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 }

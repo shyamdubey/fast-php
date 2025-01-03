@@ -32,6 +32,9 @@ class SpaceRepo{
         spaceJoinCode varchar(50) not null unique,
         spaceStatus int default 1,
         userId int not null,
+        isDeleted int not null default 0,
+        deletedOn varchar(50),
+        deletedBy int ,
         spaceDatetime varchar(45) not null,
         primary key (spaceId)
 
@@ -65,7 +68,7 @@ class SpaceRepo{
 
 
     function getAll(){
-        $sql = "SELECT * FROM ".$this->tableName."";
+        $sql = "SELECT * FROM ".$this->tableName." where A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -76,7 +79,7 @@ class SpaceRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId";
+        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId and isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -89,7 +92,7 @@ class SpaceRepo{
     
 
     function getAllByVisibility($visibility){
-        $sql = "SELECT * FROM ".$this->tableName." where spaceVisibility = $visibility";
+        $sql = "SELECT * FROM ".$this->tableName." where spaceVisibility = $visibility and isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -118,13 +121,13 @@ class SpaceRepo{
 
 
     function getBySpaceJoinCode($code){
-        $sql = "SELECT * FROM ".$this->tableName." where spaceJoinCode = '$code'";
+        $sql = "SELECT * FROM ".$this->tableName." where spaceJoinCode = '$code' and isDeleted = 0";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
 
     function getBySpaceUrl($url){
-        $sql = "SELECT * FROM ".$this->tableName." where spaceUrl = '$url'";
+        $sql = "SELECT * FROM ".$this->tableName." where spaceUrl = '$url' and isDeleted = 0";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
@@ -133,13 +136,29 @@ class SpaceRepo{
 
     function updateColors($model){
 
-        $sql = "UPDATE ".$this->tableName." set spaceProfileBgColor = '$model->spaceProfileBgColor' , spaceProfileFontColor = '$model->spaceProfileFontColor', spaceBgColor = '$model->spaceBgColor' , spaceBgFontColor = '$model->spaceBgFontColor'";
+        $sql = "UPDATE ".$this->tableName." set spaceProfileBgColor = '$model->spaceProfileBgColor' , spaceProfileFontColor = '$model->spaceProfileFontColor', spaceBgColor = '$model->spaceBgColor' , spaceBgFontColor = '$model->spaceBgFontColor' where spaceId = '$model->spaceId'";
         $res = mysqli_query($this->conn, $sql);
         if($res){
             return true;
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where spaceId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 }

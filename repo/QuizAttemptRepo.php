@@ -26,10 +26,13 @@ class QuizAttemptRepo{
         attemptedQuestions int not null,
         startTime varchar(50),
         endTime varchar(50),
-        userId int not null,
+        quizAttemptUserId int not null,
+        isDeleted int not null default 0,
+        deletedOn varchar(50),
+        deletedBy int ,
         quizAttemptDatetime varchar(45) not null,
         primary key (quizAttemptId),
-        constraint FK_QAttempt_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId)
+        constraint FK_QAttempt_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId) on delete cascade on update cascade
         )';
         $res = mysqli_query($this->conn, $sql);
         try{
@@ -49,8 +52,8 @@ class QuizAttemptRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizAttemptId, quizId, marks, startTime, endTime,  attemptedQuestions, userId, quizAttemptDatetime) 
-        values ('".getUUID()."', '$model->quizId', $model->marks,  '$model->startTime', '$model->endTime', $model->attemptedQuestions, $model->userId, '$this->now')";
+        $sql = "INSERT INTO ".$this->tableName." (quizAttemptId, quizId, marks, startTime, endTime,  attemptedQuestions, quizAttemptUserId, quizAttemptDatetime) 
+        values ('".getUUID()."', '$model->quizId', $model->marks,  '$model->startTime', '$model->endTime', $model->attemptedQuestions, $model->quizAttemptUserId, '$this->now')";
         if(mysqli_query($this->conn, $sql)){
             return true;
         }
@@ -73,7 +76,7 @@ class QuizAttemptRepo{
 
 
     function getAll(){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId" ;
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -84,10 +87,11 @@ class QuizAttemptRepo{
     }
 
     function getAllByQuizId($quizId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId'" ;
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId' and A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            $row['user'] = getUserById($row['quizAttemptUserId']);
             $data[] = $row;
         }
 
@@ -95,7 +99,7 @@ class QuizAttemptRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.userId = '$userId'" ;
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizAttemptUserId = '$userId' and A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -112,7 +116,7 @@ class QuizAttemptRepo{
     }
 
     function getLastestByUserId($userId){
-        $sql = "SELECT A.quizAttemptId FROM ".$this->tableName." A  where A.userId = $userId order by A.quizAttemptDatetime desc limit 0, 1"  ;
+        $sql = "SELECT A.quizAttemptId FROM ".$this->tableName." A  where A.quizAttemptUserId = $userId and A.isDeleted = 0 order by A.quizAttemptDatetime desc limit 0, 1"  ;
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
@@ -125,6 +129,22 @@ class QuizAttemptRepo{
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where quizAttemptId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 

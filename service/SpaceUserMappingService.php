@@ -1,173 +1,247 @@
 <?php
 
-require_once __DIR__."/../repo/SpaceUserMappingRepo.php";
-require_once __DIR__."/../models/Category.php";
-require_once __DIR__."/../functions.php";
+require_once __DIR__ . "/../repo/SpaceUserMappingRepo.php";
+require_once __DIR__ . "/../models/Category.php";
+require_once __DIR__ . "/../functions.php";
+require_once __DIR__ . "/SpaceService.php";
 
-class SpaceUserMappingService{
+class SpaceUserMappingService
+{
 
     public $spaceUserMappingRepo;
-
-    public function __construct(){
+    private $spaceService;
+    public function __construct()
+    {
         $this->spaceUserMappingRepo = new SpaceUserMappingRepo();
+        $this->spaceService = new SpaceService();
     }
 
-    public function getAll(){
+    public function getAll()
+    {
         $data = $this->spaceUserMappingRepo->getAll();
         $dataWithUserDetails = [];
-        foreach($data as $d){
+        foreach ($data as $d) {
             $d['user'] = getUserById($d['studentId']);
             $dataWithUserDetails[] = $d;
         }
         return $dataWithUserDetails;
     }
 
-    public function save($requestBody){
+    public function save($requestBody)
+    {
         $model = new SpaceUserMapping();
-        if(!isset($requestBody->spaceId)
-        || !isset($requestBody->studentId)){
+        if (
+            !isset($requestBody->spaceId)
+            || !isset($requestBody->studentId)
+        ) {
             echo sendResponse(false, 400, "Missing required parameters.");
         }
 
         $model->spaceId = $requestBody->spaceId;
         $model->studentId = $requestBody->studentId;
         $model->userId = $requestBody->userId;
-        $this->spaceUserMappingRepo->save($model);
-        
-
+        if ($this->spaceUserMappingRepo->save($model)) {
+            sendResponse(true, 201, "Mapped Successfully.");
+        } else {
+            sendResponse(false, 500, "Internal Server Error. Please Try Again Or Report to Administrator.");
+        }
     }
 
 
-    public function bulkMapByEmail($requestBody){
-        if(
+    public function bulkMapByEmail($requestBody)
+    {
+        if (
             !isset($requestBody->studentsList) || !isset($requestBody->spaceId) && count($requestBody->studentsList) < 1
-        )
-        {
+        ) {
             echo sendResponse(false, 400, 'Missing Required Parameters.');
         }
         $mappedCount = 0;
         $unMappedCount = 0;
         $studentsList = $requestBody->studentsList;
-        foreach($studentsList as $student){
+        foreach ($studentsList as $student) {
             $model = new SpaceUserMapping();
             $model->spaceId = $requestBody->spaceId;
             $model->studentId = $student->userId;
             $model->userId = $requestBody->userId;
-            if($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null){
-                if($this->spaceUserMappingRepo->save($model)){
+            if ($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null) {
+                if ($this->spaceUserMappingRepo->save($model)) {
                     $mappedCount = $mappedCount + 1;
                 }
             }
         }
         $unMappedCount = count($studentsList) - $mappedCount;
-        if($unMappedCount == 0){
+        if ($unMappedCount == 0) {
             sendResponse(true, 200, "Mapped successfully.");
+        } else {
+            sendResponse(true, 200, $mappedCount . " Student(s) mapped successfully. Found " . $unMappedCount . " student(s) already mapped with this space.");
         }
-        else{
-            sendResponse(true, 200, $mappedCount." Student(s) mapped successfully. Found ".$unMappedCount." student(s) already mapped with this space.");
-        }
-        
     }
 
 
-    public function mapByEmail($requestBody){
+    public function mapByEmail($requestBody)
+    {
         $model = new SpaceUserMapping();
-        if(
+        if (
             !isset($requestBody->spaceId) ||
             !isset($requestBody->email)
-        )
-        {
+        ) {
             echo sendResponse(false, 400, 'Missing Required Parameters.');
         }
         //get user by email
         $user = getUsersByEmail($requestBody->email);
-        if($user != null){
+        if ($user != null) {
             $model->spaceId = $requestBody->spaceId;
             $model->studentId = $user->userId;
             $model->userId = $requestBody->userId;
-            if($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null){
-                if($this->spaceUserMappingRepo->save($model)){
+            if ($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null) {
+                if ($this->spaceUserMappingRepo->save($model)) {
                     echo sendResponse(true, 201, "Mapped successfully");
                 }
-            }
-            else{
+            } else {
                 echo sendResponse(false, 500, "Student Already Mapped.");
             }
-            
-        }
-        else{
+        } else {
             echo sendResponse(false, 404, 'User not found.');
         }
     }
 
 
-    public function getByStudentIdAndSpaceId($studentId, $spaceId){
+    public function getByStudentIdAndSpaceId($studentId, $spaceId)
+    {
         return $this->spaceUserMappingRepo->getByStudentIdAndSpaceId($studentId, $spaceId);
     }
 
-    public function getAllByUserId($userId){
+    public function getAllByUserId($userId)
+    {
         return $this->spaceUserMappingRepo->getAllByUserId($userId);
     }
 
-    public function getAllBySpaceId($spaceId){
+    public function getAllBySpaceId($spaceId)
+    {
         $data = $this->spaceUserMappingRepo->getAllBySpaceId($spaceId);
         $dataWithUserDetails = [];
-        foreach($data as $d){
+        foreach ($data as $d) {
             $d['user'] = getUserById($d['studentId']);
             $dataWithUserDetails[] = $d;
         }
         return $dataWithUserDetails;
     }
 
-    public function getAllByStudentId($studentId){
+    public function getAllByStudentId($studentId)
+    {
         return $this->spaceUserMappingRepo->getAllByStudentId($studentId);
     }
 
-    public function myData(){
+    public function myData()
+    {
         $loggedInUser = getLoggedInUserInfo();
         $loggedInUser = json_decode($loggedInUser);
-        if($loggedInUser != null){
+        if ($loggedInUser != null) {
             return $this->getAllByUserId($loggedInUser->userId);
         }
     }
 
 
-    public function getShared(){
+    public function getShared()
+    {
         $loggedInUser = getLoggedInUserInfo();
-        if($loggedInUser != null){
+        if ($loggedInUser != null) {
             return $this->spaceUserMappingRepo->getAllByStudentId($loggedInUser->userId);
         }
     }
 
 
-    public function update($requestBody){
+    public function update($requestBody)
+    {
         $this->save($requestBody);
     }
 
-    public function getBySpaceId($spaceId){
+    public function getBySpaceId($spaceId)
+    {
         $data = $this->spaceUserMappingRepo->getBySpaceId($spaceId);
         $dataWithUserDetails = [];
-        foreach($data as $d){
+        foreach ($data as $d) {
             $d['user'] = getUserById($d['studentId']);
             $dataWithUserDetails[] = $d;
         }
         return $dataWithUserDetails;
     }
 
-    public function deleteById($id){
-        return $this->spaceUserMappingRepo->deleteById($id);
+    public function deleteById($id)
+    {
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            //get the saved data
+            $data = $this->getById($id);
+            if($data != null){
+                if($loggedInUser->userId == $data['userId']){
+                    return $this->spaceUserMappingRepo->deleteById($id);
+                }
+                else{
+                    sendResponse(false, 403, "You are not authorized user to delete.");
+                }
+
+            }
+        }
     }
 
-    public function getById($id){
+    public function getById($id)
+    {
         $result = $this->spaceUserMappingRepo->getById($id);
-        if($result != null){
+        if ($result != null) {
             return $result;
-        }
-        else{
+        } else {
             echo sendResponse(false, 404, "Not Found");
         }
     }
 
 
+    public function joinBySpaceCode($spaceCode)
+    {
+        $loggedInUser = getLoggedInUserInfo();
+        if ($loggedInUser != null && $spaceCode != null) {
+            //get the space 
+            $spaceModel = $this->spaceService->getBySpaceJoinCode($spaceCode);
+            if ($spaceModel != null) {
+                if ($spaceModel['userId'] == $loggedInUser->userId) {
+                    sendResponse(false, 500, "Could not join you in this space. You are the owner of this space.");
+                }
 
+                // check whether logged in user has already joined the space
+                if ($this->getByStudentIdAndSpaceId($loggedInUser->userId, $spaceModel['spaceId']) != null) {
+                    sendResponse(false, 500, "Already Joined This Space.");
+                }
+
+
+                $model = new stdClass();
+                $model->spaceId = $spaceModel['spaceId'];
+                $model->studentId = $loggedInUser->userId;
+                $model->userId = $spaceModel['userId'];
+                $this->save($model);
+            } else {
+                sendResponse(false, 404, "Could not find Space for this Join Code.");
+            }
+        }
+    }
+
+
+    public function softDelete($id)
+    {
+        if ($id != null) {
+            if ($this->getById($id) != null) {
+                $loggedInUser = getLoggedInUserInfo();
+                if ($loggedInUser != null) {
+                    if($this->spaceUserMappingRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                } else {
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
+        }
+    }
 }

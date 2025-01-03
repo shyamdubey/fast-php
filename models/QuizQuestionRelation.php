@@ -8,4 +8,8 @@ class QuizQuestionRelation{
     public $userId;
     public $quizQueRelDatetime;
     public $quizQueRelStatus;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 }

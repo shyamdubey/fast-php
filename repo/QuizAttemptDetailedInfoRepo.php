@@ -21,16 +21,17 @@ class QuizAttemptDetailedInfoRepo{
     private function createTable(){
         $sql = 'CREATE TABLE IF NOT EXISTs '.$this->tableName.'  (
         quizAttemptDetailedInfoId varchar(255) not null,
-        quizId varchar(255) not null,
         quizAttemptId varchar(255) not null,
         questionId varchar(255) not null,
         userSelectedOption varchar(50),
         isCorrect int not null,
-        userId int not null,
+        quizAttemptedBy int not null,
+        isDeleted int not null default 0,
+        deletedOn varchar(50),
+        deletedBy int ,
         quizAtmptDetInfoDatetime varchar(45) not null,
         primary key (quizAttemptDetailedInfoId),
-        constraint FK_QAttempt_delinfo_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId),
-        constraint FK_QAttempt_delinfo_Question FOREIGN KEY (questionId) REFERENCES '.AppConstants::QUESTIONS_TABLE.' (questionId)
+        constraint FK_QAttempt_delinfo_Question FOREIGN KEY (questionId) REFERENCES '.AppConstants::QUESTIONS_TABLE.' (questionId) on delete cascade on update cascade
         )';
         $res = mysqli_query($this->conn, $sql);
         if($res){
@@ -42,8 +43,8 @@ class QuizAttemptDetailedInfoRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizAttemptDetailedInfoId, quizId, quizAttemptId, questionId, isCorrect, userId, quizAtmptDetInfoDatetime, userSelectedOption) 
-        values ('".getUUID()."', '$model->quizId','$model->quizAttemptId', '$model->questionId', $model->isCorrect, $model->userId, '$this->now', '$model->userSelectedOption')";
+        $sql = "INSERT INTO ".$this->tableName." (quizAttemptDetailedInfoId, quizAttemptId, questionId, isCorrect, userId, quizAtmptDetInfoDatetime, userSelectedOption) 
+        values ('".getUUID()."', '$model->quizAttemptId', '$model->questionId', $model->isCorrect, $model->userId, '$this->now', '$model->userSelectedOption')";
         try{
             $res = mysqli_query($this->conn, $sql);
          }
@@ -60,7 +61,7 @@ class QuizAttemptDetailedInfoRepo{
 
 
     function getAll(){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId" ;
+        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.isDeleted = 0"  ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -71,7 +72,7 @@ class QuizAttemptDetailedInfoRepo{
     }
 
     function getAllByQuizId($quizId){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.quizId = '$quizId'" ;
+        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.quizId = '$quizId' and A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -82,7 +83,7 @@ class QuizAttemptDetailedInfoRepo{
     }
 
     function getAllByQuizIdAndUserId($quizId, $userId){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.userId = '$userId' and A.quizId = '$quizId'" ;
+        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.userId = '$userId' and A.quizId = '$quizId' and A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -106,6 +107,22 @@ class QuizAttemptDetailedInfoRepo{
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where quizAttemptDetailedInfoId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 }

@@ -43,8 +43,30 @@ class QuizQuestionRelationService{
         $this->save($requestBody);
     }
 
+
+    public function getByQuestionId($questionId){
+        if($questionId != null){
+            return $this->quizQueRelRepo->findAllByQuestionId($questionId);
+        }
+    }
+
     public function deleteById($id){
-        return $this->quizQueRelRepo->deleteById($id);
+        
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            //get the saved data
+            $data = $this->getById($id);
+            if($data != null){
+                if($loggedInUser->userId == $data['userId']){
+                    return $this->quizQueRelRepo->deleteById($id);
+                }
+                else{
+                    sendResponse(false, 403, "You are not authorized user to delete.");
+                }
+
+            }
+        }
     }
 
     public function getById($id){
@@ -69,4 +91,48 @@ class QuizQuestionRelationService{
 
     }
 
+    function getNotMappedQuestionsByQuizIdAndCategoryId($requestBody){
+        if(
+            !isset($requestBody->quizId) ||
+            !isset($requestBody->categoryId)
+        ){
+            sendResponse(false, 400, "Missing required parameters");
+        }
+        $quizId = $requestBody->quizId;
+        $categoryId = $requestBody->categoryId;
+
+
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            return $this->questionRepo->getQuestionsWhichAreNotMappedInQuizByCategoryId($quizId, $loggedInUser->userId, $categoryId);
+        }
+    }
+
+
+    public function getMappedQuestionsCountByQuizId($quizId){
+        if($quizId != null){
+            $row = $this->quizQueRelRepo->getMappedQuestionsCountByQuizId($quizId);
+            return $row['noOfQuestions'];
+        }
+        return null;
+    }
+
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->quizQueRelRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
+        }
+    }
 }

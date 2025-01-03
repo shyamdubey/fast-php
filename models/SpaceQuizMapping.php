@@ -7,6 +7,8 @@ class SpaceQuizMapping{
     public $spaceQuizMappingStatus;
     public $spaceId;
     public $spaceQuizMappingTime;
-
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
     
 }

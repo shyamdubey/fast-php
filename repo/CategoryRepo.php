@@ -25,6 +25,9 @@ class CategoryRepo{
         categoryStatus int default 1,
         userId int not null,
         categoryDatetime varchar(45) not null,
+        isDeleted int not null default 0,
+        deletedBy int ,
+        deletedOn varchar(50),
         primary key (categoryId)
 
         )';
@@ -56,6 +59,17 @@ class CategoryRepo{
 
 
     function getAll(){
+        $sql = "SELECT * FROM ".$this->tableName." where isDeleted = 0";
+        $data = [];
+        $res = mysqli_query($this->conn, $sql);
+        while($row = mysqli_fetch_assoc($res)){
+            $data[] = $row;
+        }
+
+        return $data;
+    }
+
+    function getAllIncludeDeleted(){
         $sql = "SELECT * FROM ".$this->tableName."";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
@@ -67,7 +81,7 @@ class CategoryRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId";
+        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId and isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -81,6 +95,22 @@ class CategoryRepo{
         $sql = "SELECT * FROM ".$this->tableName." where categoryId = '$id'";
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedBy = $userId ,deletedOn = '$this->now' where categoryId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
+        }
     }
 
     function deleteById($id){
