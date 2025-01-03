@@ -25,9 +25,12 @@ class SpaceQuizMappingRepo{
         quizId VARCHAR(255) not null,
         spaceQuizMappingStatus int default 1,
         spaceQuizMappingTime varchar(45) not null,
+        isDeleted int not null default 0,
+        deletedOn varchar(50),
+        deletedBy int ,
         primary key (spaceQuizMappingId),
-        constraint FK_qzspMap_space foreign Key (spaceId) references ".AppConstants::SPACE_TABLE." (spaceId),
-        constraint FK_qzspMap_quiz foreign Key (quizId) references ".AppConstants::QUIZ_TABLE." (quizId)
+        constraint FK_qzspMap_space foreign Key (spaceId) references ".AppConstants::SPACE_TABLE." (spaceId) on delete cascade on update cascade,
+        constraint FK_qzspMap_quiz foreign Key (quizId) references ".AppConstants::QUIZ_TABLE." (quizId) on delete cascade on update cascade
 
         )";
         $res = mysqli_query($this->conn, $sql);
@@ -52,7 +55,7 @@ class SpaceQuizMappingRepo{
 
 
     function getAll(){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on A.spaceId = B.spaceId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId";
+        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on A.spaceId = B.spaceId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId where A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -63,7 +66,7 @@ class SpaceQuizMappingRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on A.spaceId = B.spaceId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId where B.userId = $userId";
+        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on A.spaceId = B.spaceId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId where B.userId = $userId and A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -74,7 +77,7 @@ class SpaceQuizMappingRepo{
     }
 
     function getAllBySpaceId($spaceId){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on A.spaceId = B.spaceId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId where A.spaceId = '$spaceId'";
+        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::SPACE_TABLE." B on A.spaceId = B.spaceId inner join ".AppConstants::QUIZ_TABLE." C on C.quizId = A.quizId where A.spaceId = '$spaceId' and A.isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -99,6 +102,22 @@ class SpaceQuizMappingRepo{
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where spaceQuizMappingId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 }

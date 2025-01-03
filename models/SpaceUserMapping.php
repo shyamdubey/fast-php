@@ -7,4 +7,8 @@ class SpaceUserMapping{
     public $userId;
     public $studentId;
     public $spaceUserMappingDatetime;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 }

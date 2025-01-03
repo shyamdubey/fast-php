@@ -40,11 +40,9 @@ $uri_arr = explode("api/", $uri);
 $spliced_arr = explode("/", $uri_arr[1]);
 
 
-
 //authorize the request for token only if it is not exempted
-$isRouteExempted = in_array($spliced_arr, $exemptedRoutes);
+$isRouteExempted = in_array($uri_arr[1], $exemptedRoutes);
 $exemptedRouteAllowedMethod = !in_array($requestMethod, $exemptedRoutesMap[array_search($spliced_arr, $exemptedRoutes)]['allowedMethods']);
-
 if(!$isRouteExempted){
 
 //is request authorized.

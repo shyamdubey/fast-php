@@ -51,13 +51,48 @@ class CategoryService{
         }
     }
 
+
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->categoryRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
+        }
+    }
+
     public function deleteById($id){
-        if($this->categoryRepo->deleteById($id)){
-            echo sendResponse(true, 200, "Deleted Successfully.");
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            //get the saved data
+            $data = $this->getById($id);
+            if($data != null){
+                if($loggedInUser->userId == $data['userId']){
+                    if($this->categoryRepo->deleteById($id)){
+                        echo sendResponse(true, 200, "Deleted Successfully.");
+                    }
+                    else{
+                        echo sendResponse(false, 500, "Internal Server Error. Please Try Again.");
+                    }
+                }
+                else{
+                    sendResponse(false, 403, "You are not authorized user to delete.");
+                }
+
+            }
         }
-        else{
-            echo sendResponse(false, 500, "Internal Server Error. Please Try Again.");
-        }
+        
     }
 
     public function getById($id){

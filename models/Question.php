@@ -15,4 +15,7 @@ class Question{
     public $questionStatus;
     public $marks;
     public $haveImages;
+    public $isDeleted;
+    public $deletedOn;
+    public $deletedBy;
 }

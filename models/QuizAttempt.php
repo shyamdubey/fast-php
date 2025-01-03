@@ -9,6 +9,10 @@ class QuizAttempt{
     public $startTime;
     public $endTime;
     public $attemptedQuestions;
-    public $userId;
+    public $quizAttemptUserId;
     public $quizAttemptDatetime;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 }

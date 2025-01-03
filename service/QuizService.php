@@ -29,14 +29,14 @@ class QuizService{
         $model->quizDescription = $requestBody->quizDescription;
         $model->quizVisibility = $requestBody->quizVisibility;
         $model->userId = $requestBody->userId;
+        $model->quizJoinCode = generateSpaceJoinCode();
 
 
         //if we get space in request body we will do space quiz mapping
         if(isset($requestBody->spaces)){
             //get the latest quiz created by this user
             $loggedInUser = getLoggedInUserInfo();
-            $loggedInUserData = json_decode($loggedInUser);
-            $quiz = $this->quizRepo->getTopByUserId($loggedInUserData->userId);
+            $quiz = $this->quizRepo->getTopByUserId($loggedInUser->userId);
 
             $spaces = $requestBody->spaces;
             if(count($spaces)>0){
@@ -91,7 +91,21 @@ class QuizService{
     }
 
     public function deleteById($id){
-        return $this->quizRepo->deleteById($id);
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            //get the saved data
+            $data = $this->getById($id);
+            if($data != null){
+                if($loggedInUser->userId == $data['userId']){
+                    return $this->quizRepo->deleteById($id);
+                }
+                else{
+                    sendResponse(false, 403, "You are not authorized user to delete.");
+                }
+
+            }
+        }
     }
 
     public function getById($id){
@@ -101,6 +115,35 @@ class QuizService{
         }
         else{
             echo sendResponse(false, 404, "Not Found");
+        }
+    }
+
+    public function getByJoinCode($code){
+        $result = $this->quizRepo->getByJoinCode($code);
+        if($result != null){
+            return $result;
+        }
+        else{
+            echo sendResponse(false, 404, "Not Found");
+        }
+    }
+
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->quizRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
         }
     }
 

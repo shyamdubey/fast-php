@@ -9,4 +9,8 @@ class FileUpload{
     public $fileUploadDatetime;
     public $fileStatus;
     public $isPublic;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 }

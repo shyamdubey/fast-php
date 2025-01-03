@@ -57,6 +57,25 @@ class QuizAttemptDetailedInfoService{
         }
     }
 
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->quizAttemptDetailedInfoRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted Successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
+        }
+    }
+
 
 
 }

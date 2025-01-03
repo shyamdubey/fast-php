@@ -8,4 +8,8 @@ class QuestionImageMapping{
     public $userId;
     public $queImgMappingDatetime;
     public $queImgMappingStatus;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 }

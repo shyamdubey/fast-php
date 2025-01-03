@@ -24,9 +24,12 @@ class QuizStudentMappingRepo{
         quizId varchar(255) not null,
         studentId varchar(255) not null,
         userId int not null,
+        isDeleted int not null default 0,
+        deletedOn varchar(50),
+        deletedBy int ,
         quizStudentMappingtime varchar(45) not null,
         primary key (quizStudentMappingId),
-        constraint FK_QSRel_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId)
+        constraint FK_QSRel_Quiz FOREIGN KEY (quizId) REFERENCES '.AppConstants::QUIZ_TABLE.' (quizId) on delete cascade on update cascade
         )';
         $res = mysqli_query($this->conn, $sql);
         try{
@@ -58,7 +61,7 @@ class QuizStudentMappingRepo{
 
 
     function getAll(){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId" ;
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -70,13 +73,13 @@ class QuizStudentMappingRepo{
     }
 
     function getByQuizIdAndStudentId($quizId, $studentId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId' and A.studentId = $studentId"  ;
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId' and A.studentId = $studentId and A.isDeleted = 0"  ;
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }
 
     function getAllByQuizId($quizId){
-        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId'" ;
+        $sql = "SELECT A.*, B.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId where A.quizId = '$quizId' and A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -101,6 +104,22 @@ class QuizStudentMappingRepo{
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedOn = '$this->now', deletedBy = $userId where quizStudentMappingId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 

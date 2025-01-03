@@ -33,6 +33,14 @@ class UserService{
         return performMcqbuddyLogin($requestBody);
     }
 
+    public function performLogout($requestBody){
+        $token = getTokenFromRequest();
+        if($token == null){
+            sendResponse(false, 500, "Invalid Request.");
+        }
+        return performMcqBuddyLogout($token);
+    }
+
     public function getByUsernameOrEmailOrNameLike($val){
         return getUsersWhereNameEmailUsernameLike($val);
     }

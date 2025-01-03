@@ -65,7 +65,21 @@ class QuizStudentMappingService{
     }
 
     public function deleteById($id){
-        return $this->quizStudentMappingRepo->deleteById($id);
+        //check whether the deleting user is owner
+        $loggedInUser = getLoggedInUserInfo();
+        if($loggedInUser != null){
+            //get the saved data
+            $data = $this->getById($id);
+            if($data != null){
+                if($loggedInUser->userId == $data['userId']){
+                    return $this->quizStudentMappingRepo->deleteById($id);
+                }
+                else{
+                    sendResponse(false, 403, "You are not authorized user to delete.");
+                }
+
+            }
+        }
     }
 
     public function getById($id){
@@ -117,6 +131,25 @@ class QuizStudentMappingService{
         }
         else{
             return null;
+        }
+    }
+
+    public function softDelete($id){
+        if($id != null){
+            if($this->getById($id) != null){
+                $loggedInUser = getLoggedInUserInfo();
+                if($loggedInUser != null){
+                    if($this->quizStudentMappingRepo->softDelete($id, $loggedInUser->userId)){
+                        sendResponse(true, 200, "Deleted successfully.");
+                    }
+                    else{
+                        sendResponse(false, 500, "Something went wrong.");
+                    }
+                }
+                else{
+                    sendResponse(false, 500, "Could not load user data.");
+                }
+            }
         }
     }
 

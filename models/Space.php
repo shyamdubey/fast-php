@@ -16,4 +16,8 @@ class Space{
     public $spaceProfileFontColor;
     public $spaceBgColor;
     public $spaceBgFontColor;
+    public $isDeleted;
+    public $deletedBy;
+    public $deletedOn;
+
 }

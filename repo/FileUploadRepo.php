@@ -27,6 +27,9 @@ class FileUploadRepo{
         userId int not null,
         isPublic int default 1,
         fileUploadDatetime varchar(45) not null,
+        isDeleted int not null default 0,
+        deletedOn varchar(50),
+        deletedBy int ,
         primary key (fileUploadId)
 
         )';
@@ -58,7 +61,7 @@ class FileUploadRepo{
 
 
     function getAll(){
-        $sql = "SELECT * FROM ".$this->tableName."";
+        $sql = "SELECT * FROM ".$this->tableName." where isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -69,7 +72,7 @@ class FileUploadRepo{
     }
 
     function getAllByUserId($userId){
-        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId";
+        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId and isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -80,7 +83,7 @@ class FileUploadRepo{
     }
 
     function getAllByUserIdAndPurpose($userId, $purpose){
-        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId and purpose = '$purpose'";
+        $sql = "SELECT * FROM ".$this->tableName." where userId = $userId and purpose = '$purpose' and isDeleted = 0";
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
@@ -104,6 +107,22 @@ class FileUploadRepo{
         }
         else{
             return false;
+        }
+    }
+
+    function softDelete($id, $userId){
+        $sql = "UPDATE ".$this->tableName." set isDeleted = 1, deletedBy = $userId, deletedOn = '$this->now' where fileUploadId = '$id'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        catch(Exception $e){
+            echo sendResponse(false, 500, $e->getMessage());
         }
     }
 }

@@ -31,10 +31,12 @@ class AppConstants{
     const QUIZ_ATTEMPT_DETAILED_INFO_TABLE = "quiz_attempt_detailed_info";
 
     //mcqbuddy const
-    const MCQBUDDY_URL = "https://www.mcqbuddy.com";
+    const MCQBUDDY_URL = "http://localhost:8081";
+    // const MCQBUDDY_URL = "https://www.mcqbuddy.com";
     
     const MCQBUDDY_VERIFY_TOKEN_API = AppConstants::MCQBUDDY_URL."/api/verifyToken.php";
     const MCQBUDDY_LOGIN_API = AppConstants::MCQBUDDY_URL."/api/userLogin.php";
+    const MCQBUDDY_LOGOUT_API = AppConstants::MCQBUDDY_URL."/api/logout.php";
     const MCQBUDDY_GET_USER_BY_TOKEN = AppConstants::MCQBUDDY_URL."/api/getUserFromToken.php";
     const MCQBUDDY_GET_USER_BY_ID = AppConstants::MCQBUDDY_URL."/api/user.php?method=getByUserId&userId=";
     const MCQBUDDY_GET_USERS_WHERE_NAME_LIKE = AppConstants::MCQBUDDY_URL."/api/user.php?method=getByUsernameOrEmailOrName&value=";
