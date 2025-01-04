@@ -134,15 +134,25 @@ function performMcqbuddyLogin($requestBody){
 function performMcqbuddyLogout($token){
     $object = new stdClass();
     $object->token = $token;
-    $response = makeCurlRequest(AppConstants::MCQBUDDY_LOGOUT_API, 'POST', $object);
+    $data = json_encode($object);
+    $response = makeCurlRequest(AppConstants::MCQBUDDY_LOGOUT_API, 'POST', $data);
     if($response != null){
         $response = json_decode($response);
-        if($response->status){
-            return true;
-        }
+            sendResponse($response->status, $response->statusCode, $response->data);
     }
     return false;
 
+}
+
+function refreshTokenMcqbuddy($requestBody){
+    $response = makeCurlRequest(AppConstants::MCQBUDDY_REFRESH_TOKEN, 'POST', json_encode($requestBody));
+    if($response != null){
+        $response = json_decode($response);
+        sendResponse($response->status, $response->statusCode, $response->data);
+    }
+    else{
+        sendResponse(false, 500, "Something went wrong.");
+    }
 }
 
 function getUserIdFromToken($token)

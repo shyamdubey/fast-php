@@ -7,6 +7,7 @@ require_once __DIR__."/../functions.php";
 class QuizRepo{
     public $tableName;
     public $conn, $now;
+    private $quizQuestionRelRepo;
 
 
     public function __construct(){
@@ -15,6 +16,7 @@ class QuizRepo{
         $this->conn = $conn;
         $this->now = $now;
         $this->createTable();
+        $this->quizQuestionRelRepo = new QuizQuestionRelationRepo();
 
     }
 
@@ -91,6 +93,8 @@ class QuizRepo{
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){
+            $row['user'] = getUserById($row['userId']);
+            $row['noOfQuestions'] = $this->quizQuestionRelRepo->getMappedQuestionsCountByQuizId($row['quizId'])['noOfQuestions'];
             $data[] = $row;
         }
 

@@ -13,6 +13,10 @@ class UserService{
         return getAllUsers();
     }
 
+    function refreshToken($requestBody){
+        return refreshTokenMcqBuddy($requestBody);
+    }
+
     public function save($requestBody){
         if(
             !isset($requestBody->username) ||

@@ -14,11 +14,13 @@ class RouteTable{
 
         //common routes
         $this->registerRoute('common/endpoints', 'CommonService', 'getApiEndpoints', ['GET']);
+        $this->registerRoute('common/serverTime', 'CommonService', 'getServerDatetime', ['GET']);
 
 
         //user routes
         $this->registerRoute('user', 'UserService', '', ['GET', 'POST']);
         $this->registerRoute('user/create', 'UserService', 'save', ['POST']);
+        $this->registerRoute('user/refreshToken', 'UserService', 'refreshToken', ['POST']);
         $this->registerRoute('user/me', 'UserService', 'myData', ['GET']);
         $this->registerRoute('user/login', 'UserService', 'performLogin', ['POST']);
         $this->registerRoute('user/logout', 'UserService', 'performLogout', ['POST']);
@@ -63,6 +65,7 @@ class RouteTable{
         //register route for quizzes
         $this->registerRoute('quiz', 'QuizService', '', ['GET', 'POST']);
         $this->registerRoute('quiz/public', 'QuizService', 'getPublicQuiz', ['GET']);
+        $this->registerRoute('quiz/getByJoinCode/{val}', 'QuizService', 'getByJoinCode', ['GET']);
         $this->registerRoute('quiz/private', 'QuizService', 'getPrivateQuiz', ['GET']);
         $this->registerRoute('quiz/getAllByUserId/{val}', 'QuizService', 'getAllByUserId', ['GET']);
         $this->registerRoute('quiz/myQuizzes', 'QuizService', 'myQuizzes', ['GET']);
@@ -150,7 +153,7 @@ class RouteTable{
         $this->registerRoute('quizAttemptDetailedInfo/deleteById/{val}', 'QuizAttemptDetailedInfoService', 'deleteById', ['DELETE']);
         $this->registerRoute('quizAttemptDetailedInfo/delete/{val}', 'QuizAttemptDetailedInfoService', 'softDelete', ['DELETE']);
         $this->registerRoute('quizAttemptDetailedInfo/getById/{val}', 'QuizAttemptDetailedInfoService', 'getById', ['GET']);
-        $this->registerRoute('quizAttemptDetailedInfo/getByQuizId/{val}', 'QuizAttemptDetailedInfoService', 'getByQuizId', ['GET']);
+        $this->registerRoute('quizAttemptDetailedInfo/getByQuizAttemptId/{val}', 'QuizAttemptDetailedInfoService', 'getByQuizAttemptId', ['GET']);
         $this->registerRoute('quizAttemptDetailedInfo/myData', 'QuizAttemptDetailedInfoService', 'getByToken', ['GET']);
         $this->registerRoute('quizAttemptDetailedInfo/update', 'QuizAttemptDetailedInfoService', 'update', ['PUT', 'POST']);
 

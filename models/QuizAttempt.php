@@ -6,6 +6,7 @@ class QuizAttempt{
     public $quizAttemptId;
     public $quizId;
     public $marks;
+    public $noOfQuestions;
     public $startTime;
     public $endTime;
     public $attemptedQuestions;

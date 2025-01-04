@@ -128,7 +128,7 @@ class QuestionRepo{
     }
 
     function getQuestionsWhichAreNotMappedInQuiz($quizId, $userId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId') and A.userId = $userId and A.isDeleted = 0";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId' and B.isDeleted = 0) and A.userId = $userId and A.isDeleted = 0";
         $data = [];
         try{
             $res = mysqli_query($this->conn, $sql);
@@ -143,7 +143,7 @@ class QuestionRepo{
     }
 
     function getQuestionsWhichAreNotMappedInQuizByCategoryId($quizId, $userId, $categoryId){
-        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId') and A.userId = $userId and A.categoryId = '$categoryId' and A.isDeleted = 0";
+        $sql = "SELECT A.* FROM ".$this->tableName." A where A.questionId not in (SELECT B.questionId from ".AppConstants::QUIZ_QUESTION_RELATION." B where B.quizId = '$quizId' and B.isDeleted=0) and A.userId = $userId and A.categoryId = '$categoryId' and A.isDeleted = 0";
         $data = [];
         try{
             $res = mysqli_query($this->conn, $sql);
