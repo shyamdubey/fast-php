@@ -124,6 +124,7 @@ function case1(){
         $service = new $requiredService;
         switch ($requestMethod){
             case 'POST':
+                //do not remove userdetails check for login url and register url
                 if($userDetails != null){
                     $requestBody->userId = $userDetails->userId;
                 }
@@ -166,6 +167,8 @@ function case2(){
         $requestBody = getRequestBody();
         switch ($requestMethod){
             case 'POST':
+                //do not remove userdetails check for login url and register url
+                
                 if($userDetails != null){
                     $requestBody->userId = $userDetails->userId;
                 }

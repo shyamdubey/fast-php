@@ -26,6 +26,7 @@ class QuizAttemptRepo{
         attemptedQuestions int not null,
         startTime varchar(50),
         endTime varchar(50),
+        noOfQuestions int not null,
         quizAttemptUserId int not null,
         isDeleted int not null default 0,
         deletedOn varchar(50),
@@ -52,8 +53,8 @@ class QuizAttemptRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizAttemptId, quizId, marks, startTime, endTime,  attemptedQuestions, quizAttemptUserId, quizAttemptDatetime) 
-        values ('".getUUID()."', '$model->quizId', $model->marks,  '$model->startTime', '$model->endTime', $model->attemptedQuestions, $model->quizAttemptUserId, '$this->now')";
+        $sql = "INSERT INTO ".$this->tableName." (quizAttemptId, quizId, marks, startTime, endTime,  attemptedQuestions, quizAttemptUserId, quizAttemptDatetime, noOfQuestions) 
+        values ('".getUUID()."', '$model->quizId', $model->marks,  '$model->startTime', '$model->endTime', $model->attemptedQuestions, $model->quizAttemptUserId, '$this->now', $model->noOfQuestions)";
         if(mysqli_query($this->conn, $sql)){
             return true;
         }
@@ -116,7 +117,7 @@ class QuizAttemptRepo{
     }
 
     function getLastestByUserId($userId){
-        $sql = "SELECT A.quizAttemptId FROM ".$this->tableName." A  where A.quizAttemptUserId = $userId and A.isDeleted = 0 order by A.quizAttemptDatetime desc limit 0, 1"  ;
+        $sql = "SELECT A.* FROM ".$this->tableName." A  where A.quizAttemptUserId = $userId and A.isDeleted = 0 order by A.quizAttemptDatetime desc limit 0, 1"  ;
         $res = mysqli_query($this->conn, $sql);
         return mysqli_fetch_assoc($res);
     }

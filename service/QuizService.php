@@ -114,7 +114,7 @@ class QuizService{
             return $result;
         }
         else{
-            echo sendResponse(false, 404, "Not Found");
+            echo sendResponse(false, 404, "Data not found for this id.");
         }
     }
 
@@ -124,7 +124,7 @@ class QuizService{
             return $result;
         }
         else{
-            echo sendResponse(false, 404, "Not Found");
+            echo sendResponse(false, 404, "Quiz not found for this code.");
         }
     }
 

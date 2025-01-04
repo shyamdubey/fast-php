@@ -43,7 +43,7 @@ class QuizAttemptDetailedInfoRepo{
 
 
     function save($model){
-        $sql = "INSERT INTO ".$this->tableName." (quizAttemptDetailedInfoId, quizAttemptId, questionId, isCorrect, userId, quizAtmptDetInfoDatetime, userSelectedOption) 
+        $sql = "INSERT INTO ".$this->tableName." (quizAttemptDetailedInfoId, quizAttemptId, questionId, isCorrect, quizAttemptedBy, quizAtmptDetInfoDatetime, userSelectedOption) 
         values ('".getUUID()."', '$model->quizAttemptId', '$model->questionId', $model->isCorrect, $model->userId, '$this->now', '$model->userSelectedOption')";
         try{
             $res = mysqli_query($this->conn, $sql);
@@ -71,8 +71,8 @@ class QuizAttemptDetailedInfoRepo{
         return $data;
     }
 
-    function getAllByQuizId($quizId){
-        $sql = "SELECT A.*, B.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_TABLE." B on B.quizId = A.quizId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.quizId = '$quizId' and A.isDeleted = 0" ;
+    function getAllByQuizAttemptId($quizAttemptId){
+        $sql = "SELECT A.*, C.* FROM ".$this->tableName." A inner join ".AppConstants::QUIZ_ATTEMPT_TABLE." B on A.quizAttemptId = B.quizAttemptId inner join ".AppConstants::QUESTIONS_TABLE." C on C.questionId = A.questionId where A.quizAttemptId = '$quizAttemptId' and A.isDeleted = 0" ;
         $data = [];
         $res = mysqli_query($this->conn, $sql);
         while($row = mysqli_fetch_assoc($res)){

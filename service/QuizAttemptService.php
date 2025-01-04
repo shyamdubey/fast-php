@@ -64,10 +64,13 @@ class QuizAttemptService{
 
         $endTime = $this->now;
         $incorrect = count($requestBody->attemptedQuestions) - $correct;
-        //
+        ////get Quiz Total Questions
+        $noOfQuestions = $this->quizQuestionRelationService->getMappedQuestionsCountByQuizId($quiz['quizId']);
+        
 
         $model->quizId = $requestBody->quizId;
         $model->marks = $marks;
+        $model->noOfQuestions = $noOfQuestions;
         $model->endTime = $endTime;
         $model->startTime = $requestBody->startTime;
         $model->attemptedQuestions = count($requestBody->attemptedQuestions);
@@ -100,10 +103,7 @@ class QuizAttemptService{
         $response->marks = $marks;
         $response->totalMarks = $totalMarks;
         $response->incorrect = $incorrect;
-
-        //get Quiz Total Questions
-        $noOfQuestions = $this->quizQuestionRelationService->getMappedQuestionsCountByQuizId($quiz['quizId']);
-        $response->total = $noOfQuestions;
+        $response->total = $savedData['noOfQuestions'];
 
         echo sendResponse(true, 200, $response);
         

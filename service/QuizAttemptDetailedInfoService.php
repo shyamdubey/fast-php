@@ -18,11 +18,10 @@ class QuizAttemptDetailedInfoService{
 
     public function save($requestBody){
         $model = new QuizAttemptDetailedInfo();
-        if(!isset($requestBody->quizId) || !isset($requestBody->quizAttemptId) || !isset($requestBody->questionId) || !isset($requestBody->userSelectedOption) || !isset($requestBody->isCorrect)){
+        if(!isset($requestBody->quizAttemptId) || !isset($requestBody->questionId) || !isset($requestBody->userSelectedOption) || !isset($requestBody->isCorrect)){
             echo sendResponse(false, 400, "Missing required parameters.");
         }
 
-        $model->quizId = $requestBody->quizId;
         $model->questionId = $requestBody->questionId;
         $model->userId = $requestBody->userId;
         $model->quizAttemptId = $requestBody->quizAttemptId;
@@ -34,8 +33,8 @@ class QuizAttemptDetailedInfoService{
     }
 
 
-    public function getByQuizId($quizId){
-        return $this->quizAttemptDetailedInfoRepo->getAllByQuizId($quizId);
+    public function getByQuizAttemptId($quizAttemptId){
+        return $this->quizAttemptDetailedInfoRepo->getAllByQuizAttemptId($quizAttemptId);
     }
 
 
@@ -75,6 +74,9 @@ class QuizAttemptDetailedInfoService{
             }
         }
     }
+
+
+
 
 
 
