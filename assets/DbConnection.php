@@ -10,6 +10,10 @@ class DbConnection{
 
     public function __construct(){
         $this->conn = null;
+        // $this->dbName = "u935539699_quizbuddy";
+        // $this->serverName = "localhost";
+        // $this->username = "u935539699_dauji5";
+        // $this->password = "Dauji@Dubey1996";
         $this->dbName = "quizbuddy";
         $this->serverName = "localhost";
         $this->username = "shyam";

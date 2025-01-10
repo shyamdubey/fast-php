@@ -161,4 +161,25 @@ class SpaceRepo{
             echo sendResponse(false, 500, $e->getMessage());
         }
     }
+
+    function update($model){
+        $sql = "
+        update ".$this->tableName." set
+        spaceName = '$model->spaceName',
+        spaceVisibility = '$model->spaceVisibility',
+        spaceDescription = '$model->spaceDescription',
+        spaceUrl = '$model->spaceUrl'
+        where spaceId = '$model->spaceId'
+        ";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return true;
+            }
+            return false;
+        }
+        catch(Exception $e){
+            sendResponse(false, 500, $e->getMessage());
+        }
+    }
 }

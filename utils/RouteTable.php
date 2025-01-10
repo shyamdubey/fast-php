@@ -38,7 +38,7 @@ class RouteTable{
          $this->registerRoute('space/deleteById/{val}', 'SpaceService', 'deleteById', ['DELETE']);
          $this->registerRoute('space/delete/{val}', 'SpaceService', 'softDelete', ['DELETE']);
          $this->registerRoute('space/getById/{val}', 'SpaceService', 'getById', ['GET']);
-         $this->registerRoute('space/update', 'SpaceService', 'update', ['PUT', 'POST']);
+         $this->registerRoute('space/update', 'SpaceService', 'update', ['PUT']);
          $this->registerRoute('space/mySpaces', 'SpaceService', 'mySpaces', ['GET']);
          $this->registerRoute('space/getByCode/{val}', 'SpaceService', 'getBySpaceJoinCode', ['GET']);
          $this->registerRoute('space/getByUrl/{val}', 'SpaceService', 'getBySpaceUrl', ['GET']);
@@ -83,7 +83,7 @@ class RouteTable{
         $this->registerRoute('question/deleteById/{val}', 'QuestionService', 'deleteById', ['DELETE']);
         $this->registerRoute('question/delete/{val}', 'QuestionService', 'softDelete', ['DELETE']);
         $this->registerRoute('question/getById/{val}', 'QuestionService', 'getById', ['GET']);
-        $this->registerRoute('question/update', 'QuestionService', 'update', ['PUT', 'POST']);
+        $this->registerRoute('question/update', 'QuestionService', 'update', ['PUT']);
         $this->registerRoute('question/getByQuizId/{val}', 'QuestionService', 'getByQuizId', ['GET']);
         $this->registerRoute('question/myQuestion', 'QuestionService', 'myQuestions', ['GET']);
         $this->registerRoute('question/category/{val}', 'QuestionService', 'getQuestionsByCategoryIdAndUserId', ['GET']);

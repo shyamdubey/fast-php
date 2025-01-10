@@ -91,6 +91,15 @@ class QuestionImageMappingService{
         }
     }
 
+    function getByFileuploadIdAndQuestionId($fileUploadId, $questionId){
+        if($fileUploadId != null && $questionId != null){
+           return $this->questionImgMappingRepo->findByFileUploadIdAndQuestionId($fileUploadId, $questionId);
+        }
+        else{
+            sendResponse(false, 400, "Missing Required Parameters.");
+        }
+    }
+
 
 
 }

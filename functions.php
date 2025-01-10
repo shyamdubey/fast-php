@@ -1,5 +1,5 @@
 <?php
-
+require_once __DIR__."/assets/dbconn.php";
 require_once __DIR__."/models/FileUpload.php";
 require_once __DIR__."/service/FileUploadService.php";
 foreach (glob(__DIR__ . "/models/*.php") as $file) {
@@ -122,7 +122,7 @@ function performMcqbuddyLogin($requestBody){
             return $response->data;
         }
         else{
-            return $response->data;
+            sendResponse(false, 500, $response->data);
         }
     }
     else{
@@ -346,13 +346,14 @@ function getAllUsersByPagination($page){
 
 
 function makeRequestBodySafe($requestBody){
+    global $conn;
     if($requestBody != null){
         $array = get_mangled_object_vars($requestBody);
         $arrayKeys = array_keys($array);
         for($i = 0; $i < count($arrayKeys); $i++){
             $key = $arrayKeys[$i];
             if($array[$key] != null && gettype($array[$key]) == "string" && strlen($array[$key])>0){
-                $requestBody->$key = htmlentities($array[$key]);
+                $requestBody->$key = mysqli_real_escape_string($conn, $array[$key]);
             }
         }
     }

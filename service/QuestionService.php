@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/../repo/QuestionRepo.php";
 require_once __DIR__ . "/../repo/QuizQuestionRelationRepo.php";
+require_once __DIR__ . "/../repo/QuestionImageMappingRepo.php";
 require_once __DIR__ . "/../models/Question.php";
 require_once __DIR__ . "/../functions.php";
 require_once __DIR__ . "/../models/QuestionImageMapping.php";
@@ -12,11 +13,15 @@ class QuestionService
 
     public $questionRepo;
     public $quizQueRelRepo;
+    public $questionImageMappingService;
+    public $questionImageMappingRepo;
 
     public function __construct()
     {
         $this->questionRepo = new QuestionRepo();
         $this->quizQueRelRepo = new QuizQuestionRelationRepo();
+        $this->questionImageMappingService = new QuestionImageMappingService();
+        $this->questionImageMappingRepo = new QuestionImageMappingRepo();
     }
 
     public function getAll()
@@ -64,8 +69,7 @@ class QuestionService
                     $mapping->questionId = $savedQuestion['questionId'];
                     $mapping->imageId = $img->fileUploadId;
                     $mapping->userId = $model->userId;
-                    $questionImageMappingService = new QuestionImageMappingService();
-                    $questionImageMappingService->save($mapping);
+                    $this->questionImageMappingRepo->save($mapping);
                 }
             }
         }
@@ -89,7 +93,90 @@ class QuestionService
 
     public function update($requestBody)
     {
-        $this->save($requestBody);
+        if (
+            !isset($requestBody->question)
+            || !isset($requestBody->option1)
+            || !isset($requestBody->option2)
+            || !isset($requestBody->option3)
+            || !isset($requestBody->option4)
+            || !isset($requestBody->correctAns)
+            || !isset($requestBody->categoryId)
+        ) {
+            echo sendResponse(false, 400, "Missing required parameters.");
+        }
+
+        $loggedInUser = getLoggedInUserInfo();
+
+
+        $savedQuestion = $this->getById($requestBody->questionId);
+
+        //if not owner of the question
+        if ($loggedInUser->userId != $savedQuestion['userId']) {
+            sendResponse(false, 403, "Unauthorized Access!");
+        }
+
+        //get all fileupload id from the data received from UI to manage the question image mapping
+        $imageIdArrayFromUI = [];
+
+        if ($requestBody->haveImages == 1) {
+            if ($requestBody->imageArr != null) {
+                foreach ($requestBody->imageArr as $img) {
+                    $imageIdArrayFromUI[] = $img->fileUploadId;
+                }
+            }
+        }
+
+        //check whether saved question has images
+        $questionImageMappingArr = $this->questionImageMappingService->getAllByQuestionId($savedQuestion['questionId']);
+
+        //get all image question mapping
+        if (count($questionImageMappingArr) > 0) {
+            $i = 0;
+            foreach ($questionImageMappingArr as $mapping) {
+                if (!in_array($mapping['fileUploadId'], $imageIdArrayFromUI)) {
+                    //remove this mapping from db
+                    $this->questionImageMappingRepo->deleteById($mapping['queImgMappingId']);
+
+                    //delete from the array
+                    array_slice($questionImageMappingArr, $i, 1);
+                }
+                $i++;
+            }
+        }
+        $imageArr = $requestBody->imageArr;
+        if (gettype($imageArr) == 'array' && count($imageArr) > 0) {
+            foreach ($imageArr as $img) {
+                //check whether the same mapping already exists
+                $savedMapping = $this->questionImageMappingService->getByFileuploadIdAndQuestionId($img->fileUploadId, $savedQuestion['questionId']);
+                if ($savedMapping == null) {
+                    $mapping = new QuestionImageMapping();
+                    $mapping->questionId = $savedQuestion['questionId'];
+                    $mapping->imageId = $img->fileUploadId;
+                    $mapping->userId = $savedQuestion['userId'];
+                    $this->questionImageMappingService->save($mapping);
+                }
+            }
+        }
+
+
+
+
+        $model = new Question();
+        $model->question = $requestBody->question;
+        $model->option1 = $requestBody->option1;
+        $model->option2 = $requestBody->option2;
+        $model->option3 = $requestBody->option3;
+        $model->option4 = $requestBody->option4;
+        $model->correctAns = $requestBody->correctAns;
+        $model->marks = $requestBody->marks;
+        $model->categoryId = $requestBody->categoryId;
+        $model->questionId = $requestBody->questionId;
+        $model->haveImages = $requestBody->haveImages;
+        if ($this->questionRepo->update($model)) {
+            sendResponse(true, 200, "Question Updated Successfully");
+        } else {
+            sendResponse(false, 500, "Internal Server Error. Please try again.");
+        }
     }
 
     public function deleteById($id)
@@ -146,19 +233,18 @@ class QuestionService
         }
     }
 
-    public function softDelete($id){
-        if($id != null){
-            if($this->getById($id) != null){
+    public function softDelete($id)
+    {
+        if ($id != null) {
+            if ($this->getById($id) != null) {
                 $loggedInUser = getLoggedInUserInfo();
-                if($loggedInUser != null){
-                    if($this->questionRepo->softDelete($id, $loggedInUser->userId)){
+                if ($loggedInUser != null) {
+                    if ($this->questionRepo->softDelete($id, $loggedInUser->userId)) {
                         sendResponse(true, 200, "Deleted successfully.");
-                    }
-                    else{
+                    } else {
                         sendResponse(false, 500, "Something went wrong.");
                     }
-                }
-                else{
+                } else {
                     sendResponse(false, 500, "Could not load user data.");
                 }
             }
