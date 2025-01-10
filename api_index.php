@@ -1,12 +1,12 @@
 <?php
-require_once __DIR__."/functions.php";
-require_once __DIR__."/cors.php";
-require_once __DIR__."/utils/RouteTable.php";
+require_once __DIR__ . "/functions.php";
+require_once __DIR__ . "/cors.php";
+require_once __DIR__ . "/utils/RouteTable.php";
 
 
 
 //include all servicem,
-foreach(glob("service/*.php") as $file){
+foreach (glob("service/*.php") as $file) {
     require_once $file;
 }
 
@@ -24,13 +24,13 @@ $routes = [];
 $exemptedRoutes = [];
 $controllersArray =  [];
 $allowedMethodsArray = [];
-foreach($routesControllerMap as $map){
+foreach ($routesControllerMap as $map) {
     array_push($routes, $map['route']);
     array_push($controllersArray, $map['controller']);
     array_push($allowedMethodsArray, $map['allowedMethods']);
 }
 
-foreach($exemptedRoutesMap as $map){
+foreach ($exemptedRoutesMap as $map) {
     array_push($exemptedRoutes, $map['route']);
 }
 
@@ -43,32 +43,30 @@ $spliced_arr = explode("/", $uri_arr[1]);
 //authorize the request for token only if it is not exempted
 $isRouteExempted = in_array($uri_arr[1], $exemptedRoutes);
 $exemptedRouteAllowedMethod = !in_array($requestMethod, $exemptedRoutesMap[array_search($spliced_arr, $exemptedRoutes)]['allowedMethods']);
-if(!$isRouteExempted){
+if (!$isRouteExempted) {
 
-//is request authorized.
-if(!isset($headers['Authorization'])){
-    echo sendResponse(false,  401, "Unauthorized access.");
-    die();
-}
-else{
-    $token = $headers['Authorization'];
-    $token = explode("Bearer ", $token)[1];
-    if($token == null){
+    //is request authorized.
+    if (!isset($headers['Authorization'])) {
         echo sendResponse(false,  401, "Unauthorized access.");
-    }
+        die();
+    } else {
+        $token = $headers['Authorization'];
+        $token = explode("Bearer ", $token)[1];
+        if ($token == null) {
+            echo sendResponse(false,  401, "Unauthorized access.");
+        }
 
-    if(!isTokenValid($token)){
-        echo sendResponse(false, 401, "Unauthorized access.");
-    }
-    else{
-        $userDetails = getUserFromToken($token);
-        if($userDetails == null){
+        if (!isTokenValid($token)) {
             echo sendResponse(false, 401, "Unauthorized access.");
+        } else {
+            $userDetails = getUserFromToken($token);
+            if ($userDetails == null) {
+                echo sendResponse(false, 401, "Unauthorized access.");
+            }
         }
     }
 }
 
-}
 
 
 
@@ -76,56 +74,53 @@ else{
 
 
 
+switch (count($spliced_arr)) {
 
-switch (count($spliced_arr)){
-    
     case 1:
-        if($spliced_arr[0] == null){
+        if ($spliced_arr[0] == null) {
             defaultFunction();
-        }
-        else{
+        } else {
             case1();
         }
         break;
     case 2:
-        if($spliced_arr[1] == null){
+        if ($spliced_arr[1] == null) {
             case1();
-        }
-        else{
+        } else {
             case2();
         }
         break;
     case 3:
-        if($spliced_arr[2] == null){
+        if ($spliced_arr[2] == null) {
             case2();
-        }
-        else{
+        } else {
             case3();
         }
         break;
     default:
-    defaultFunction();
-        break;            
+        defaultFunction();
+        break;
 }
 
 
 
-function case1(){
+function case1()
+{
     global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray, $userDetails, $requestMethod;
     $route = $spliced_arr[0];
     $requestBody = getRequestBody();
     $requestBody = makeRequestBodySafe($requestBody);
-    if(in_array($route, $routes)){
+    if (in_array($route, $routes)) {
         $requiredService = $controllersArray[array_search($route, $routes)];
         $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
-        if(!in_array($requestMethod, $allowedMethods)){
+        if (!in_array($requestMethod, $allowedMethods)) {
             echo sendResponse(false, 405, "Method Not Allowed");
         }
         $service = new $requiredService;
-        switch ($requestMethod){
+        switch ($requestMethod) {
             case 'POST':
                 //do not remove userdetails check for login url and register url
-                if($userDetails != null){
+                if ($userDetails != null) {
                     $requestBody->userId = $userDetails->userId;
                 }
                 $service->save($requestBody);
@@ -136,40 +131,38 @@ function case1(){
                 break;
             default:
                 echo sendResponse(false, 404, 'Invalid Request');
-
         }
-
-    }
-    else{
+    } else {
         sendResponse(false, 404, "Not Found");
     }
 }
 
-function case2(){
+function case2()
+{
     global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray, $userDetails;
     $firstRoute = $spliced_arr[0];
     $secondRoute = $spliced_arr[1];
-    if(strlen($firstRoute) < 1 || strlen($secondRoute) < 1){
+    if (strlen($firstRoute) < 1 || strlen($secondRoute) < 1) {
         echo sendResponse(false, 404, "Page Not Found");
-
     }
-    $route = $firstRoute."/".$secondRoute;
-    if(in_array($route, $routes)){
+    $route = $firstRoute . "/" . $secondRoute;
+    if (in_array($route, $routes)) {
         $requiredService = $controllersArray[array_search($route, $routes)];
         $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
         $requestMethod = $_SERVER['REQUEST_METHOD'];
-        if(!in_array($requestMethod, $allowedMethods)){
+        if (!in_array($requestMethod, $allowedMethods)) {
             echo sendResponse(false, 405, "Method Not Allowed");
         }
         $service = explode("::", $requiredService)[0];
         $service = new $service;
         $requiredMethod = explode("::", $requiredService)[1];
         $requestBody = getRequestBody();
-        switch ($requestMethod){
+        $requestBody = makeRequestBodySafe($requestBody);
+        switch ($requestMethod) {
             case 'POST':
                 //do not remove userdetails check for login url and register url
-                
-                if($userDetails != null){
+
+                if ($userDetails != null) {
                     $requestBody->userId = $userDetails->userId;
                 }
                 echo sendResponse(true, 200, $service->$requiredMethod($requestBody));
@@ -182,33 +175,29 @@ function case2(){
                 break;
             default:
                 echo sendResponse(false, 404, 'Invalid Request');
-
         }
-
-    }
-    else{
+    } else {
         echo sendResponse(false, 404, "Not Found");
     }
-
 }
 
 
-function case3(){
+function case3()
+{
     global $spliced_arr, $routes, $controllersArray, $allowedMethodsArray;
     $requestBody = getRequestBody();
     $firstRoute = $spliced_arr[0];
     $secondRoute = $spliced_arr[1];
     $thirdRoute = $spliced_arr[2];
-    if(strlen($firstRoute) < 1 || strlen($secondRoute) < 1 || strlen($thirdRoute) < 1){
+    if (strlen($firstRoute) < 1 || strlen($secondRoute) < 1 || strlen($thirdRoute) < 1) {
         echo sendResponse(false, 404, "Page Not Found");
-
     }
-    $route = $firstRoute."/".$secondRoute."/{val}";
-    if(in_array($route, $routes)){
+    $route = $firstRoute . "/" . $secondRoute . "/{val}";
+    if (in_array($route, $routes)) {
         $requiredService = $controllersArray[array_search($route, $routes)];
         $allowedMethods = $allowedMethodsArray[array_search($route, $routes)];
         $requestMethod = $_SERVER['REQUEST_METHOD'];
-        if(!in_array($requestMethod, $allowedMethods)){
+        if (!in_array($requestMethod, $allowedMethods)) {
             echo sendResponse(false, 405, "Method Not Allowed");
         }
         $service = explode("::", $requiredService)[0];
@@ -216,7 +205,7 @@ function case3(){
         $requiredMethod = explode("::", $requiredService)[1];
         $thirdValue = $thirdRoute;
 
-        switch ($requestMethod){
+        switch ($requestMethod) {
             case 'GET':
                 echo sendResponse(true, 200, $service->$requiredMethod($thirdValue));
                 break;
@@ -225,19 +214,13 @@ function case3(){
                 break;
             default:
                 echo sendResponse(false, 404, '404 Not Found');
-
         }
-
-    }
-    else{
+    } else {
         echo sendResponse(false, 404, "404 Not Found");
     }
-
 }
 
-function defaultFunction(){
+function defaultFunction()
+{
     echo sendResponse(true, 200, "UP");
-
-
 }
-

@@ -15,6 +15,7 @@ class AppConstants{
     const EXTENSIONS_FOR_FILES = ['pdf'];
     const MAX_FILE_SIZE = 2 * 1024 * 1024;   ///bits
     const BASE_URL = "http://localhost:8084";
+    // const BASE_URL = "https://space.mcqbuddy.com";
 
     //tables
     const QUIZ_TABLE = "quizzes";

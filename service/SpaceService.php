@@ -64,7 +64,41 @@ class SpaceService
 
     public function update($requestBody)
     {
-        $this->save($requestBody);
+        if (
+            !isset($requestBody->spaceId)
+            || !isset($requestBody->spaceName)
+            || !isset($requestBody->spaceDescription)
+            || !isset($requestBody->spaceVisibility)
+            || !isset($requestBody->spaceUrl)
+        ) {
+            echo sendResponse(false, 400, "Missing required parameters.");
+        }
+
+        //get the saved space
+        $savedSpace = $this->getById($requestBody->spaceId);
+        if($savedSpace == null){
+            sendResponse(false, 404, "Space Not Found.");
+        }
+
+        $model = new Space;
+        $model->spaceId = $savedSpace['spaceId'];
+        $model->spaceName = $requestBody->spaceName;
+        $model->spaceDescription = $requestBody->spaceDescription;
+        $model->spaceVisibility = $requestBody->spaceVisibility;
+        $model->spaceUrl = $requestBody->spaceUrl;
+
+        try{
+            if($this->spaceRepo->update($model)){
+                sendResponse(true, 200, "Space Updated Successfully.");
+            }
+            else{
+                sendResponse(false, 500, "Something went wrong. Please try again.");
+            }
+
+        }
+        catch(Exception $e){
+            sendResponse(false, 500, $e->getMessage());
+        }
     }
 
     public function deleteById($id)

@@ -125,4 +125,17 @@ class QuestionImageMappingRepo{
             echo sendResponse(false, 500, $e->getMessage());
         }
     }
+
+    function findByFileUploadIdAndQuestionId($fileUploadId, $questionId){
+        $sql = "SELECT * FROM ".$this->tableName. " where imageId = '$fileUploadId' and questionId = '$questionId'";
+        try{
+            $res = mysqli_query($this->conn, $sql);
+            if($res){
+                return mysqli_fetch_assoc($res);
+            }
+        }catch(Exception $e){
+            sendResponse(false, 500, $e->getMessage());
+        }
+        return null;
+    }
 }
