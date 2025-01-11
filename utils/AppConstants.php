@@ -14,7 +14,7 @@ class AppConstants{
     const EXTENSIONS_FOR_IMAGES = ['jpeg', 'png', 'jpg'];
     const EXTENSIONS_FOR_FILES = ['pdf'];
     const MAX_FILE_SIZE = 2 * 1024 * 1024;   ///bits
-    const BASE_URL = "http://localhost:8084";
+    const BASE_URL = "http://localhost:4200";
     // const BASE_URL = "https://space.mcqbuddy.com";
 
     //tables
@@ -22,6 +22,7 @@ class AppConstants{
     const SPACE_QUIZ_MAPPING_TABLE = "space_quiz_mappings";
     const CATEGORY_TABLE = "categories";
     const SPACE_USER_MAPPING_TABLE = "space_user_mapping";
+    const SPACE_TEACHER_MAPPING_TABLE = "space_teacher_mapping";
     const SPACE_TABLE = "spaces";
     const FILE_UPLOAD_TABLE = "files_uploaded";
     const QUIZ_QUESTION_RELATION = "quiz_question_relations";
@@ -40,11 +41,12 @@ class AppConstants{
     const MCQBUDDY_LOGOUT_API = AppConstants::MCQBUDDY_URL."/api/logout.php";
     const MCQBUDDY_REFRESH_TOKEN = AppConstants::MCQBUDDY_URL."/api/refreshToken.php";
     const MCQBUDDY_GET_USER_BY_TOKEN = AppConstants::MCQBUDDY_URL."/api/getUserFromToken.php";
-    const MCQBUDDY_GET_USER_BY_ID = AppConstants::MCQBUDDY_URL."/api/user.php?method=getByUserId&userId=";
-    const MCQBUDDY_GET_USERS_WHERE_NAME_LIKE = AppConstants::MCQBUDDY_URL."/api/user.php?method=getByUsernameOrEmailOrName&value=";
-    const MCQBUDDY_GET_USERS_BY_EMAIL = AppConstants::MCQBUDDY_URL."/api/user.php?method=getByEmail&value=";
-    const MCQBUDDY_GET_ALL_USERS = AppConstants::MCQBUDDY_URL."/api/user.php?method=getAllUsers";
-    const MCQBUDDY_GET_ALL_USERS_BY_PAGINATION = AppConstants::MCQBUDDY_URL."/api/user.php?method=getAllUsersByPagination&page=";
-    const MCQBUDDY_CREATE_ACCOUNT = AppConstants::MCQBUDDY_URL."/api/user.php";
+    const MCQBUDDY_GET_USER_BY_ID = AppConstants::MCQBUDDY_URL."/api/url/user/getById/";
+    const MCQBUDDY_GET_USERS_WHERE_NAME_LIKE = AppConstants::MCQBUDDY_URL."/api/url/user/getByUsernameOrEmailOrName&value/";
+    const MCQBUDDY_GET_USERS_BY_EMAIL = AppConstants::MCQBUDDY_URL."/api/url/user/getByEmail/";
+    const MCQBUDDY_GET_ALL_USERS = AppConstants::MCQBUDDY_URL."/api/url/user/getAllUsers";
+    const MCQBUDDY_GET_ALL_USERS_BY_PAGINATION = AppConstants::MCQBUDDY_URL."/api/url/user/getAllUsersByPagination/";
+    const MCQBUDDY_CREATE_ACCOUNT = AppConstants::MCQBUDDY_URL."/api/url/user";
+    const MCQBUDDY_SAVE_NOTIFICATION = AppConstants::MCQBUDDY_URL."/api/url/notification";
 
 }

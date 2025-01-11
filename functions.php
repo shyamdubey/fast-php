@@ -53,8 +53,12 @@ function assertRequestDelete()
 
 function makeCurlRequest($url, $requestType, $data)
 {
+
+    //prepare the header
+    $headers = ['Authorization:  "Bearer '.getTokenFromRequest()];
     $curlHandle = curl_init($url);
     curl_setopt($curlHandle, CURLOPT_POSTFIELDS, $data);
+    curl_setopt($curlHandle, CURLOPT_HTTPHEADER, $headers);
     if ($requestType == 'POST') {
         curl_setopt($curlHandle, CURLOPT_POST, true);
     }
@@ -281,8 +285,13 @@ function getUserById($userId){
         if($jsonData->statusCode == 200){
             return $jsonData->data;
         }
+        else if($jsonData->statusCode == 404){
+            sendResponse($jsonData->status, 400, $jsonData->data);
+        }
     }
-    return null;
+    else{
+        sendResponse(false, 500, "Error while getting user details from MCQ Buddy");
+    }
 }
 
 
@@ -312,11 +321,27 @@ function getUsersWhereNameEmailUsernameLike($value){
     return null;
 }
 
+function saveNotification($notificationOwnerId, $userId, $content, $redirectUrl){
+    $model = new stdClass();
+    $model->notification_owner_id = $notificationOwnerId;
+    $model->user_id = $userId;
+    $model->content = $content;
+    $model->redirect_url = $redirectUrl;
+
+    $response = makeCurlRequest(AppConstants::MCQBUDDY_SAVE_NOTIFICATION, 'POST', json_encode($model));
+}
+
 function getUsersByEmail($value){
     $jsonResponse = makeCurlRequest(AppConstants::MCQBUDDY_GET_USERS_BY_EMAIL.$value, 'GET', null);
     if($jsonResponse != null){
         $jsonData = json_decode($jsonResponse);
-        return $jsonData->data;
+        if($jsonData->statusCode == 200){
+            return $jsonData->data;
+
+        }
+        else{
+            sendResponse(false, $jsonData->statusCode, $jsonData->data);
+        }
     }
     return null;
 }

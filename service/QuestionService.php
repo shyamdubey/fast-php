@@ -236,16 +236,17 @@ class QuestionService
     public function softDelete($id)
     {
         if ($id != null) {
-            if ($this->getById($id) != null) {
+            $data = $this->getById($id);
+            if ($data != null) {
                 $loggedInUser = getLoggedInUserInfo();
-                if ($loggedInUser != null) {
+                if ($loggedInUser != null && $data['userId'] == $loggedInUser->userId) {
                     if ($this->questionRepo->softDelete($id, $loggedInUser->userId)) {
                         sendResponse(true, 200, "Deleted successfully.");
                     } else {
                         sendResponse(false, 500, "Something went wrong.");
                     }
                 } else {
-                    sendResponse(false, 500, "Could not load user data.");
+                    sendResponse(false, 403, "Access Forbidden.");
                 }
             }
         }
