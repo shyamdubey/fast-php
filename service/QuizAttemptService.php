@@ -49,6 +49,12 @@ class QuizAttemptService{
         //get the quiz data 
         $quiz = $this->quizService->getById($requestBody->quizId);
 
+        //save the notification
+        if($quiz['userId'] != $requestBody->userId){
+            saveNotification($quiz['userId'], $requestBody->userId, ' attempted your quiz '.$quiz['quizName']. ' on MB Spaces', AppConstants::BASE_URL);
+
+        }
+
         //calculate the marks
         $attemptedQuestions = $requestBody->attemptedQuestions;
         foreach($attemptedQuestions as $que){
@@ -165,9 +171,10 @@ class QuizAttemptService{
 
     public function softDelete($id){
         if($id != null){
-            if($this->getById($id) != null){
+            $data = $this->getById($id);
+            if($data != null){
                 $loggedInUser = getLoggedInUserInfo();
-                if($loggedInUser != null){
+                if($loggedInUser != null && $data['userId'] == $loggedInUser->userId){
                     if($this->quizAttemptRepo->softDelete($id, $loggedInUser->userId)){
                         sendResponse(true, 200, "Deleted successfully.");
                     }
@@ -176,7 +183,7 @@ class QuizAttemptService{
                     }
                 }
                 else{
-                    sendResponse(false, 500, "Could not load user data.");
+                    sendResponse(false, 403, "Access Forbidden.");
                 }
             }
         }

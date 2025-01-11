@@ -65,6 +65,9 @@ class SpaceUserMappingService
             $model->userId = $requestBody->userId;
             if ($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null) {
                 if ($this->spaceUserMappingRepo->save($model)) {
+                    //save notification
+                    saveNotification($model->studentId, $requestBody->userId, ' mapped you in a space on MCQ Buddy Space.', AppConstants::BASE_URL);
+                    
                     $mappedCount = $mappedCount + 1;
                 }
             }
@@ -95,6 +98,8 @@ class SpaceUserMappingService
             $model->userId = $requestBody->userId;
             if ($this->getByStudentIdAndSpaceId($model->studentId, $model->spaceId) == null) {
                 if ($this->spaceUserMappingRepo->save($model)) {
+                    //save notification
+                    saveNotification($model->studentId, $requestBody->userId, ' mapped you in a space on MCQ Buddy Space.', AppConstants::BASE_URL);
                     echo sendResponse(true, 201, "Mapped successfully");
                 }
             } else {
@@ -175,14 +180,35 @@ class SpaceUserMappingService
             //get the saved data
             $data = $this->getById($id);
             if($data != null){
-                if($loggedInUser->userId == $data['userId']){
+                //if the owner of space want to remove any user added by the mapped teacher he can do so
+                //get the space data 
+                $spaceData = $this->spaceService->getById($data['spaceId']);
+                if(($loggedInUser->userId == $data['userId']) || ($loggedInUser->userId == $data['studentId']) || ($spaceData != null && $spaceData['userId'] == $loggedInUser->userId)){
+                    $spaceData = $this->spaceService->getById($data['spaceId']);
+                    //give notification to the user
+                    //if user is leaving the space
+                    if($loggedInUser->userId == $data['studentId']){
+                        saveNotification($spaceData['userId'], $loggedInUser->userId, ' has left your space '.$spaceData['spaceName']. ' on MCQ Buddy Space', AppConstants::BASE_URL);
+                    }
+
+                    //owner is removing the user
+                    if($loggedInUser->userId == $spaceData['userId']){
+                        saveNotification($data['studentId'], $loggedInUser->userId, ' removed you from '.$spaceData['spaceName']. ' Space on MCQ Buddy Space', AppConstants::BASE_URL);
+                    }
+                   
                     return $this->spaceUserMappingRepo->deleteById($id);
                 }
                 else{
-                    sendResponse(false, 403, "You are not authorized user to delete.");
+                    sendResponse(false, 403, "Access Forbidden.");
                 }
 
             }
+            else{
+                sendResponse(false, 404, "Resource Not Found.");
+            }
+        }
+        else{
+            sendResponse(false, 403, "Access Forbidden.");
         }
     }
 
@@ -213,11 +239,20 @@ class SpaceUserMappingService
                     sendResponse(false, 500, "Already Joined This Space.");
                 }
 
+                //if the space is private and logged in user is not the owner of space 
+                //will not allow to join the space
+
+                if($spaceModel['spaceVisibility'] == 0 && $loggedInUser->userId != $spaceModel['userId']){
+                    sendResponse(false, 500, "You can not join private space. Approach the space owner to join you.");
+                }
+
 
                 $model = new stdClass();
                 $model->spaceId = $spaceModel['spaceId'];
                 $model->studentId = $loggedInUser->userId;
                 $model->userId = $spaceModel['userId'];
+                //save notification 
+                saveNotification($spaceModel['userId'], $loggedInUser->userId, ' has joined your space using space join code.', AppConstants::BASE_URL);
                 $this->save($model);
             } else {
                 sendResponse(false, 404, "Could not find Space for this Join Code.");
@@ -229,19 +264,32 @@ class SpaceUserMappingService
     public function softDelete($id)
     {
         if ($id != null) {
-            if ($this->getById($id) != null) {
+            $data = $this->getById($id);
+            if ($data != null) {
+                //if the owner of space want to remove any user added by the mapped teacher he can do so
+                //get the space data 
+                $spaceData = $this->spaceService->getById($data['spaceId']);
                 $loggedInUser = getLoggedInUserInfo();
-                if ($loggedInUser != null) {
+                if (($loggedInUser != null && $data['userId'] == $loggedInUser->userId) || ($spaceData != null && $loggedInUser->userId == $spaceData['userId']) ) {
                     if($this->spaceUserMappingRepo->softDelete($id, $loggedInUser->userId)){
+                        //give notification to the user
+                        $spaceData = $this->spaceService->getById($data['spaceId']);
+                        saveNotification($data['studentId'], $loggedInUser->userId, 'removed you from '.$spaceData['spaceName']. ' Space on MCQ Buddy Space', AppConstants::BASE_URL);
+                       
                         sendResponse(true, 200, "Deleted successfully.");
                     }
                     else{
                         sendResponse(false, 500, "Something went wrong.");
                     }
                 } else {
-                    sendResponse(false, 500, "Could not load user data.");
+                    sendResponse(false, 403, "You are not authorized to delete.");
                 }
             }
+            else{
+                sendResponse(false, 404, "Resource Not Found.");
+            }
+        }else{
+            sendResponse(false, 400, "Invalid Request.");
         }
     }
 }

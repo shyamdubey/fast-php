@@ -54,11 +54,21 @@ class RouteTable{
           $this->registerRoute('spaceStudentMapping/getAllByStudentId/{val}', 'SpaceUserMappingService', 'getAllByStudentId', ['GET']);
           $this->registerRoute('spaceStudentMapping/getBySpaceId/{val}', 'SpaceUserMappingService', 'getAllBySpaceId', ['GET']);
           $this->registerRoute('spaceStudentMapping/deleteById/{val}', 'SpaceUserMappingService', 'deleteById', ['DELETE']);
-          $this->registerRoute('spaceStudentMapping/delete/{val}', 'SpaceUserMappingService', 'softDelete', ['DELETE']);
+          $this->registerRoute('spaceStudentMapping/delete/{val}', 'SpaceUserMappingService', 'deleteById', ['DELETE']);
           $this->registerRoute('spaceStudentMapping/getById/{val}', 'SpaceUserMappingService', 'getById', ['GET']);
           $this->registerRoute('spaceStudentMapping/getShared', 'SpaceUserMappingService', 'getShared', ['GET']);
           $this->registerRoute('spaceStudentMapping/update', 'SpaceUserMappingService', 'update', ['PUT', 'POST']);
           $this->registerRoute('spaceStudentMapping/join/{val}', 'SpaceUserMappingService', 'joinBySpaceCode', ['GET']);
+
+          //SPACE TEACHER MAPPING ROUTES
+          $this->registerRoute('spaceTeacherMapping', 'SpaceTeacherMappingService', '' , ['POST']);
+          $this->registerRoute('spaceTeacherMapping/delete/{val}', 'SpaceTeacherMappingService', 'deleteById' , ['DELETE']);
+          $this->registerRoute('spaceTeacherMapping/getTeachersIdBySpaceId/{val}', 'SpaceTeacherMappingService', 'getAllTeacherIdMappedWithSpace' , ['GET']);
+          $this->registerRoute('spaceTeacherMapping/getBySpaceId/{val}', 'SpaceTeacherMappingService', 'getAllBySpaceId' , ['GET']);
+          $this->registerRoute('spaceTeacherMapping/bulkMapByEmail', 'SpaceTeacherMappingService', 'bulkMapByEmail', ['POST']);
+          $this->registerRoute('spaceTeacherMapping/myData', 'SpaceTeacherMappingService', 'getAllByLoggedInUserId', ['GET']);
+
+
 
   
 
@@ -70,7 +80,7 @@ class RouteTable{
         $this->registerRoute('quiz/getAllByUserId/{val}', 'QuizService', 'getAllByUserId', ['GET']);
         $this->registerRoute('quiz/myQuizzes', 'QuizService', 'myQuizzes', ['GET']);
         $this->registerRoute('quiz/deleteById/{val}', 'QuizService', 'deleteById', ['DELETE']);
-        $this->registerRoute('quiz/delete/{val}', 'QuizService', 'softDelete', ['DELETE']);
+        $this->registerRoute('quiz/delete/{val}', 'QuizService', 'deleteById', ['DELETE']);
         $this->registerRoute('quiz/getById/{val}', 'QuizService', 'getById', ['GET']);
         $this->registerRoute('quiz/update', 'QuizService', 'update', ['PUT', 'POST']);
         $this->registerRoute('quiz/notMappedWithSpace/{val}', 'QuizService', 'getBySpaceNotMappedData', ['GET']);

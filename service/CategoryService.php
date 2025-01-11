@@ -54,9 +54,10 @@ class CategoryService{
 
     public function softDelete($id){
         if($id != null){
-            if($this->getById($id) != null){
+            $data = $this->getById($id);
+            if($data != null){
                 $loggedInUser = getLoggedInUserInfo();
-                if($loggedInUser != null){
+                if($loggedInUser != null && $data['userId'] == $loggedInUser->userId){
                     if($this->categoryRepo->softDelete($id, $loggedInUser->userId)){
                         sendResponse(true, 200, "Deleted successfully.");
                     }

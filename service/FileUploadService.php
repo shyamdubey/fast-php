@@ -140,9 +140,10 @@ class FileUploadService
 
     public function softDelete($id){
         if($id != null){
-            if($this->getById($id) != null){
+            $data = $this->getById($id);
+            if($data != null){
                 $loggedInUser = getLoggedInUserInfo();
-                if($loggedInUser != null){
+                if($loggedInUser != null && $loggedInUser->userId == $data['userId']){
                     if($this->fileUploadRepo->softDelete($id, $loggedInUser->userId)){
                         sendResponse(true, 200, "Deleted successfully.");
                     }
