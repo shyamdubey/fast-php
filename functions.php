@@ -122,6 +122,9 @@ function performMcqbuddyLogin($requestBody){
     $response = makeCurlRequest(AppConstants::MCQBUDDY_LOGIN_API, 'POST', json_encode($requestBody));
     if($response != null){
         $response = json_decode($response);
+        if($response == null){
+            sendResponse(false, 500, "Internal Server Error");
+        }
         if($response->statusCode == 200){
             return $response->data;
         }
@@ -286,7 +289,7 @@ function getUserById($userId){
             return $jsonData->data;
         }
         else if($jsonData->statusCode == 404){
-            sendResponse($jsonData->status, 400, $jsonData->data);
+            sendResponse($jsonData->status, 404, $jsonData->data);
         }
     }
     else{
