@@ -4,7 +4,7 @@ include_once __DIR__."/DbConstants.php";
 
 class AppConstants{
     // const MCQBUDDY_DB_NAME = DbConstant::MCQBUDDY_DB;
-    const QUIZBUDDY_DB_NAME = DbConstant::QUIZBUDDY_DB;
+    const QUIZBUDDY_DB_NAME = DbConstant::FAMILYTREE_DB;
 
 
     //common
@@ -18,19 +18,10 @@ class AppConstants{
     // const BASE_URL = "https://space.mcqbuddy.com";
 
     //tables
-    const QUIZ_TABLE = "quizzes";
-    const SPACE_QUIZ_MAPPING_TABLE = "space_quiz_mappings";
-    const CATEGORY_TABLE = "categories";
-    const SPACE_USER_MAPPING_TABLE = "space_user_mapping";
-    const SPACE_TEACHER_MAPPING_TABLE = "space_teacher_mapping";
-    const SPACE_TABLE = "spaces";
-    const FILE_UPLOAD_TABLE = "files_uploaded";
-    const QUIZ_QUESTION_RELATION = "quiz_question_relations";
-    const QUIZ_STUDENT_MAPPING_TABLE = "quiz_students_mapping";
-    const QUESTIONS_TABLE = "questions";
-    const QUESTION_IMAGE_MAPPING_TABLE = "question_image_mapping";
-    const QUIZ_ATTEMPT_TABLE = "quiz_attempts";
-    const QUIZ_ATTEMPT_DETAILED_INFO_TABLE = "quiz_attempt_detailed_info";
+    const FAMILY_TABLE = "families";
+    const RELATION_TABLE = "relations";
+    const PERSON_TABLE = "persons";
+    
 
     //mcqbuddy const
     const MCQBUDDY_URL = "http://localhost:8081";

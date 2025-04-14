@@ -2,6 +2,5 @@
 
 
 class DbConstant{
-    const MCQBUDDY_DB = "mcqbuddy";
-    const QUIZBUDDY_DB = "quizbuddy";
+    const FAMILYTREE_DB = "familytree";
 }

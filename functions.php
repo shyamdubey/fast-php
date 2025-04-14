@@ -9,7 +9,7 @@ foreach (glob(__DIR__ . "/models/*.php") as $file) {
 
 function getUUID()
 {
-    return uniqid("quizbuddy");
+    return uniqid("familytree");
 }
 
 function getLogFileNameForToday()
