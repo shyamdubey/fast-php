@@ -1,7 +1,14 @@
 <?php
+
 namespace Core\Log;
 
-interface LoggerInterface{
+/**
+ * LoggerInterface provides key functions for logging the messages in application.
+ * @author Shyam Dubey
+ * @since 2025
+ */
+interface LoggerInterface
+{
 
 
     static function get_logger($className);
@@ -9,6 +16,4 @@ interface LoggerInterface{
     function info($message);
     function warn($message);
     function error($message);
-    
-
 }

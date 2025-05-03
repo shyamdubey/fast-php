@@ -2,8 +2,13 @@
 
 namespace Core\Enums;
 
-
-enum HttpStatus:string {
+/**
+ * This enum provides list of mostly used HttpStatus for Response.
+ * @author Shyam Dubey
+ * @since 2025
+ */
+enum HttpStatus: string
+{
     case OK = "200";
     case CREATED = "201";
     case ACCEPTED = "202";

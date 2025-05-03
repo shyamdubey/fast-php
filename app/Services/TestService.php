@@ -1,10 +1,9 @@
 <?php
 
 
-namespace App\services;
+namespace App\Services;
 
 use Core\Enums\HttpStatus;
-use Core\Http\Request;
 use Core\Http\Response;
 use Core\Log\LoggerFactory;
 
@@ -18,9 +17,15 @@ class TestService{
     }
 
 
-    public function test($foo){
+    public function test($params){
         
         $this->logger->info("Hitting Test Service test method.");
-        Response::json(HttpStatus::OK, ["hello"=>$foo]);
+        Response::json(HttpStatus::OK, ["hello"=>$params["val"]]);
+    }
+
+    public function index(){
+        
+        $this->logger->info("Hitting Test Service test method.");
+        Response::json(HttpStatus::OK, ["hello"=>"Welcome"]);
     }
 }
