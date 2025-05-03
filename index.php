@@ -1,8 +1,13 @@
 <?php
+require_once "vendor/autoload.php";
 
-include_once __DIR__."/cors.php";
-include_once __DIR__."/functions.php";
-include_once __DIR__."/utils/AppConstants.php";
+use App\Middleware\AuthMiddleware;
+use Core\Exception\ExceptionHandler;
+use Core\Http\Router;
+use Core\Security\CorsSecurity;
 
+CorsSecurity::init();
+ExceptionHandler::init();
+Router::POST("/fun/{foo}/run/{bar}", "TestService@test", [AuthMiddleware::class]);
 
-echo json_encode(["data"=>"Welcome to Family Tree APIs"]);
+Router::init();

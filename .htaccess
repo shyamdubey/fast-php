@@ -4,5 +4,4 @@ RewriteCond %{REQUEST_FILENAME}\.php -f
 
 RewriteRule ^(.*)$ $1.php [NC,L]
 
-RewriteRule ^api/([a-z0-9A-Z]+) api_index.php?route=$1 [NC,L]
-RewriteRule ^api/ api_index.php [NC,L]
+RewriteRule ^api/([a-z0-9A-Z]+) index.php?route=$1 [NC,L]
