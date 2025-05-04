@@ -8,21 +8,23 @@ use Core\Http\Router;
 
 /**
  * **********************************************************************************************************
- * Welcome to PHP-FAST Light Weight API Framework. This Framework is developed on core php by Mr. Shyam Dubey. 
+ * Welcome to shyamdubey/fastphp A Lightweight PHP Framework for creating RestFul APIs. This Framework is developed on core php by Author Shyam Dubey. 
  * You can start from this file. 
  * 
  * 
  * 
  * Basic Structure of Project will be 
- * -app
+ *
+ * src
+ *   -app
  *      -Middleware
  *      -Model
  *      -Repo
  *      -Service
  *      Settings.php
- * -core
+ *   -core
  *      (Code which needs not to be changed)
- * -logs
+ *   -logs
  * -vendor
  * composer.json
  * composer.lock
