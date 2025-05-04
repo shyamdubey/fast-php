@@ -1,6 +1,7 @@
 <?php
 require_once "vendor/autoload.php";
 
+use App\Services\AuthService;
 use App\Services\TestService;
 use Core\App;
 use Core\Http\Router;

@@ -185,11 +185,7 @@ class Router
      */
     public static function init()
     {
-
-        $uri = $_SERVER['REQUEST_URI'];
-        $uri_arr = explode("api", $uri);
-        $routeUri = $uri_arr[1];
-
+        $routeUri = $_SERVER['REQUEST_URI'];
         if (count(self::$routes) > 0) {
             $route_found = false;
             foreach (self::$routes as $route) {
@@ -204,7 +200,6 @@ class Router
                     self::handle($route['url'], $route['callback'], $route['method'], $params, $middleware = $route['middlewares']);
                 }
                 // }
-
             }
             if (!$route_found) {
                 Response::json(HttpStatus::NOT_FOUND, ["message" => "Not Found"]);
