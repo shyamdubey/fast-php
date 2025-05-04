@@ -195,12 +195,10 @@ class Router
             foreach (self::$routes as $route) {
                 $url = trim($routeUri, '/');
 
-                // foreach ($route as $pattern => $callback) {
                 $patternRegex = preg_replace('/\{(\w+)\}/', '(?P<\1>[^/]+)', trim($route['url'], '/'));
                 $patternRegex = "@^" . $patternRegex . "$@";
 
                 if (preg_match($patternRegex, $url, $matches)) {
-                    // Filter only named captures
                     $params = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
                     $route_found = true;
                     self::handle($route['url'], $route['callback'], $route['method'], $params, $middleware = $route['middlewares']);

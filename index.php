@@ -3,7 +3,6 @@ require_once "vendor/autoload.php";
 
 use App\Services\TestService;
 use Core\App;
-use Core\Http\Request;
 use Core\Http\Router;
 
 

@@ -1,8 +1,19 @@
 {
-   "autoload": {
-    "psr-4":{
-        "Core\\":"core/",
-        "App\\":"app/"
-    }
-   }
+    "name": "shyamdubey/fastphp",
+    "description": "A Light Weight PHP Framework for creating RestFul APIs.",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Shyam Dubey"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Core\\": "src/core/",
+            "App\\": "src/app/"
+        }
+    },
+    "minimum-stability": "stable",
+    "require": {}
 }
