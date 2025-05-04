@@ -15,5 +15,13 @@
         }
     },
     "minimum-stability": "stable",
-    "require": {}
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/shyamdubey/fastphp"
+        }
+    ],
+    "require": {
+        "shyamdubey/fastphp": "dev-main"
+    }
 }
