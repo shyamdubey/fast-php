@@ -2,7 +2,7 @@
     "name": "shyamdubey/fastphp",
     "description": "A Light Weight PHP Framework for creating RestFul APIs.",
     "type": "project",
-    "license": "MIT",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "Shyam Dubey"
