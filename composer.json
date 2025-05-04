@@ -22,6 +22,5 @@
         }
     ],
     "require": {
-        "shyamdubey/fastphp": "dev-main"
     }
 }
