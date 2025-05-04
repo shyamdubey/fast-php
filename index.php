@@ -1,7 +1,6 @@
 <?php
 require_once "vendor/autoload.php";
 
-use App\Services\AuthService;
 use App\Services\TestService;
 use Core\App;
 use Core\Http\Router;
@@ -46,6 +45,19 @@ use Core\Http\Router;
  * 
  * If you want to add any Middleware for any route you can add that Middleware in Router::func($url, $callback, $middleware = []) 
  * $middleware should be provided in array.
+ * 
+ * 
+ * Now to run the project open the project in terminal and run the command
+ * 
+ * 
+ * 
+ * 
+ *php -S localhost:8080
+ * 
+ * 
+ *the application will be live on localhost:8080 .
+ * 
+ * 
  * ***********************************************************************************************************
  */
 

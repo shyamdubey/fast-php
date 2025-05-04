@@ -18,7 +18,7 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/shyamdubey/fastphp"
+            "url": "https://github.com/shyamdubey/fast-php"
         }
     ],
     "require": {
